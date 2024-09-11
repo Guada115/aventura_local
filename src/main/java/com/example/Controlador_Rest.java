@@ -30,4 +30,9 @@ public class Controlador_Rest
     {
         return "indice";
     }
+     @GetMapping("/Welcome")
+    public String welcome()
+    {
+        return "Welcome";
+    }
 }
