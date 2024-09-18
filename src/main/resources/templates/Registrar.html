@@ -7,7 +7,7 @@
         <title>Registrar</title>
         <style>
             body {
-                background-color: rgb(37, 216, 229);
+                background-color: rgb(14, 113, 159);
                 display: flex;
                 flex-direction: column;
                 min-height: 100vh;
@@ -30,13 +30,14 @@
             }
 
             .form-container {
-                background-color: rgb(37, 216, 229);
+                background-color: rgb(9, 84, 119);
                 padding: 20px;
                 border-radius: 10px;
                 box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
                 text-align: left;
                 width: 80%;
                 max-width: 800px;
+                margin: 0 auto;
             }
 
             .cajaTexto {
@@ -82,27 +83,21 @@
         </div>
 
         <div class="form-container">
-            <h1 style="text-align: center;">Registrarse</h1>
+            <h1 style="text-align: center; color: rgb(43, 43, 43); font-weight: bold; font-size:32px; ">REGISTRARSE</h1>
             <form action="Welcome" method="get">
-                <label for="Nombre">Nombre:</label>
+                
                 <input type="text" id="nombre" name="nombre" class="cajaTexto" placeholder="Escribe tu nombre">
-                <br>
-                <label for="Apellido">Apellido:</label>
+                <br>                
                 <input type="text" id="apellido" name="apellido" class="cajaTexto" placeholder="Escribe tu apellido">
-                <br>
-                <label for="Correo">Correo:</label>
+                <br>               
                 <input type="text" id="correo" name="correo" class="cajaTexto" placeholder="Escribe tu correo">
-                <br>
-                <label for="fecha-nacimiento">Fecha de Nacimiento:</label>
+                <br>                
                 <input type="date" id="fecha-nacimiento" name="fecha-nacimiento" class="cajaTexto">
-                <br>
-                <label for="Usuario">Usuario:</label>
+                <br>                
                 <input type="text" id="usuario" name="usuario" class="cajaTexto" placeholder="Escribe tu usuario">
-                <br>
-                <label for="Contraseña">Contraseña:</label>
+                <br>                
                 <input type="password" id="contraseña" name="contraseña" class="cajaTexto" placeholder="Escribe tu contraseña">
-                <br>
-                <label for="Contraseña">Verifica Contraseña:</label>
+                <br>                
                 <input type="password" id="contraseña" name="contraseña" class="cajaTexto" placeholder="Verifica tu contraseña">
                 <br><br>
                 <button type="submit" class="btnGuardar">Guardar</button>
