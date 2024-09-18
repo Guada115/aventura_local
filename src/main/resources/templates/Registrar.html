@@ -69,10 +69,20 @@
                 text-align: center;
                 text-decoration: none;
                 color: black;
+               
             }
 
             .btnGuardar:hover {
                 background-color: #ddd;
+                
+                
+            }
+            .formulario
+            {
+                display: flex;
+                flex-direction: column;
+                align-content: center;
+                align-items: center;
             }
         </style>
     </head>
@@ -84,7 +94,7 @@
 
         <div class="form-container">
             <h1 style="text-align: center; color: rgb(43, 43, 43); font-weight: bold; font-size:32px; ">REGISTRARSE</h1>
-            <form action="Welcome" method="get">
+            <form action="Welcome" method="get" class="formulario">
                 
                 <input type="text" id="nombre" name="nombre" class="cajaTexto" placeholder="Escribe tu nombre">
                 <br>                
