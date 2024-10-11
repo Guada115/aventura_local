@@ -31,4 +31,8 @@ public class Controlador_Rest
     {
         return "Welcome";
     }
+    @GetMapping("/aventuras")
+    public String aventuras(){return "aventuras";}
+    @GetMapping("/restaurantes")
+    public String restaurantes(){return "restaurantes";}
 }

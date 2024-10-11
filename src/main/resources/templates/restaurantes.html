@@ -1,0 +1,142 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <title>Restaurantes - Aventura Local</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(to right, rgb(9, 84, 119), rgb(129, 204, 239));
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        h2 {
+            color: white;
+            text-align: center;
+            margin: 20px 0;
+            font-family: fantasy;
+        }
+
+        .card-body h5 {
+            color: rgb(5, 47, 78);
+        }
+
+        .btn-primary {
+            background-color: rgb(7, 58, 82);
+        }
+
+        /* Estilos para que las imágenes tengan el mismo tamaño */
+        .card-img-top {
+            width: 100%;
+            height: 200px; /* Altura fija para todas las imágenes */
+            object-fit: cover; /* Mantener la proporción dentro del contenedor */
+        }
+
+        footer {
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            text-align: center;
+            width: 100%;
+            margin-top: auto;
+        }
+
+        @media (max-width: 768px) {
+            /* Ajustes para pantallas pequeñas */
+            .card-img-top {
+                height: 150px; /* Cambiar la altura para pantallas más pequeñas */
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="Welcome"><span>Aventura Local</span></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="restaurantes">Restaurantes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="aventuras">Aventuras</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Transporte</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <h2>Restaurantes</h2>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <img src="{% static 'img_restaurantes/almorzar.jpg' %}" class="card-img-top" alt="Lugares para Almorzar">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Lugares para Almorzar</h5>
+                    <p class="card-text">Descubre los mejores lugares para disfrutar un almuerzo delicioso.</p>
+                    <a href="#" class="btn btn-primary">Ver Más</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <img src="mecateaderos.jpg" class="card-img-top" alt="Mecateaderos">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Mecateaderos</h5>
+                    <p class="card-text">Perfectos para una pausa con un buen café y algo para picar.</p>
+                    <a href="#" class="btn btn-primary">Ver Más</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <img src="comida-rapida.jpg" class="card-img-top" alt="Comida Rápida">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Comida Rápida</h5>
+                    <p class="card-text">Opciones rápidas y deliciosas para cuando tienes poco tiempo.</p>
+                    <a href="#" class="btn btn-primary">Ver Más</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <img src="postres.jpg" class="card-img-top" alt="Helados y Postres">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Helados y Postres</h5>
+                    <p class="card-text">El lugar ideal para los amantes de los postres y helados.</p>
+                    <a href="#" class="btn btn-primary">Ver Más</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="container">
+        <p>&copy; 2024 Aventura Local - Todos los derechos reservados.</p>
+    </div>
+</footer>
+</body>
+
+</html>
