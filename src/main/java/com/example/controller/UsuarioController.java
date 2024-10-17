@@ -1,7 +1,7 @@
 package com.example.controller;
 
 
-import com.example.Usuario;
+import com.example.entidades.Usuario;
 import com.example.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

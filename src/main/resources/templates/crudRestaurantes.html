@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD de Restaurantes</title>
+    <style>
+        body {
+            background: linear-gradient(to right, rgb(9, 84, 119), rgb(129, 204, 239));
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-container {
+            background-color: rgb(24, 73, 95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: left;
+            width: 80%;
+            max-width: 800px;
+            margin: 20px 0;
+        }
+
+        .cajaTexto {
+            width: 100%;
+            max-width: 500px;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: whitesmoke;
+            border-radius: 10px;
+        }
+
+        .btnGuardar {
+            background-color: whitesmoke;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            margin: 10px auto;
+            text-align: center;
+            color: black;
+        }
+
+        .restaurant-item {
+            background-color: rgb(240, 240, 240);
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h1 style="text-align: center; color: whitesmoke;">Registrar Restaurante</h1>
+    <form id="restaurant-form">
+        <input type="text" id="nombre" name="nombre" class="cajaTexto" placeholder="Nombre del Restaurante" required>
+        <input type="text" id="horario" name="horario" class="cajaTexto" placeholder="Horario" required>
+        <input type="text" id="sector" name="sector" class="cajaTexto" placeholder="Sector" required>
+        <input type="text" id="tipoComida" name="tipoComida" class="cajaTexto" placeholder="Tipo de Comida" required>
+        <input type="file" id="foto" name="foto" class="cajaTexto" accept="image/*" required>
+        <button type="submit" class="btnGuardar">Guardar</button>
+    </form>
+</div>
+
+<div id="restaurant-list" class="form-container">
+    <h2 style="text-align: center; color: whitesmoke;">Lista de Restaurantes</h2>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        obtenerRestaurantes();
+
+        document.getElementById('restaurant-form').addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevenir el comportamiento predeterminado
+
+            const formData = new FormData(this); // Obtener los datos del formulario
+
+            fetch('/api/restaurantes', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Restaurante agregado:', data);
+                    this.reset(); // Limpiar el formulario
+                    obtenerRestaurantes(); // Obtener la lista actualizada de restaurantes
+                })
+                .catch(error => {
+                    console.error('Error al agregar el restaurante:', error);
+                });
+        });
+    });
+
+    function obtenerRestaurantes() {
+        fetch('/api/restaurantes')
+            .then(response => response.json())
+            .then(data => {
+                const restaurantList = document.getElementById('restaurant-list');
+                restaurantList.innerHTML = ''; // Limpiar la lista antes de agregar
+
+                data.forEach(restaurante => {
+                    const newRestaurant = document.createElement('div');
+                    newRestaurant.classList.add('restaurant-item');
+
+                    // Convertir la foto a base64 para mostrarla
+                    const base64String = btoa(String.fromCharCode(...new Uint8Array(restaurante.foto)));
+
+                    newRestaurant.innerHTML = `
+                    <h3>${restaurante.nombre}</h3>
+                    <p><strong>Horario:</strong> ${restaurante.horario}</p>
+                    <p><strong>Sector:</strong> ${restaurante.sector}</p>
+                    <p><strong>Tipo de Comida:</strong> ${restaurante.tipoComida}</p>
+                    <img src="data:image/jpeg;base64,${base64String}" alt="Foto del Restaurante">
+                    <br>
+                    <button class="btnEliminar" onclick="eliminarRestaurante(${restaurante.id})">Eliminar</button>
+                    <button class="btnEditar" onclick="editarRestaurante(${restaurante.id})">Editar</button>
+                `;
+
+                    restaurantList.appendChild(newRestaurant);
+                });
+            })
+            .catch(error => {
+                console.error('Error al obtener la lista de restaurantes:', error);
+            });
+    }
+
+    function eliminarRestaurante(id) {
+        fetch(`/api/restaurantes/${id}`, {
+            method: 'DELETE'
+        })
+            .then(() => {
+                obtenerRestaurantes(); // Actualiza la lista después de eliminar
+            })
+            .catch(error => {
+                console.error('Error al eliminar el restaurante:', error);
+            });
+    }
+
+    function editarRestaurante(id) {
+        // Primero, obtén los datos del restaurante seleccionado
+        fetch(`/api/restaurantes/${id}`)
+            .then(response => response.json())
+            .then(restaurante => {
+                // Rellenar el formulario con los datos del restaurante
+                document.getElementById('nombre').value = restaurante.nombre;
+                document.getElementById('horario').value = restaurante.horario;
+                document.getElementById('sector').value = restaurante.sector;
+                document.getElementById('tipoComida').value = restaurante.tipoComida;
+
+                // Cambiar la lógica de envío para la actualización
+                document.getElementById('restaurant-form').onsubmit = function (e) {
+                    e.preventDefault();
+                    const formData = new FormData(this);
+
+                    // Enviar la solicitud de actualización
+                    fetch(`/api/restaurantes/${id}`, {
+                        method: 'PUT', // Método PUT para actualizar
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Restaurante actualizado:', data);
+                            this.reset(); // Limpiar el formulario
+                            obtenerRestaurantes(); // Obtener la lista actualizada de restaurantes
+                        })
+                        .catch(error => {
+                            console.error('Error al actualizar el restaurante:', error);
+                        });
+                };
+            })
+            .catch(error => {
+                console.error('Error al obtener el restaurante:', error);
+            });
+    }
+</script>
+</body>
+</html>
