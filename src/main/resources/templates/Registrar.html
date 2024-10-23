@@ -81,6 +81,18 @@
             text-align: center;
             margin-top: 10px;
         }
+
+        .error {
+            color: red; /* Color para los mensajes de error */
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .success {
+            color: green; /* Color para los mensajes de éxito */
+            text-align: center;
+            margin-top: 10px;
+        }
     </style>
 </head>
 
@@ -93,7 +105,12 @@
 <div class="form-container">
     <h1>REGISTRARSE</h1>
 
-    <form action="/registro" method="POST" class="formulario">
+    <!-- Mensaje de éxito -->
+    <div th:if="${mensaje}" class="success">
+        <p th:text="${mensaje}"></p>
+    </div>
+
+    <form action="/registro" method="GET" class="formulario">
         <input type="text" id="identificacion" name="identificacion" class="cajaTexto" placeholder="Escribe tu identificación" required>
         <br>
         <input type="text" id="nombre" name="nombre" class="cajaTexto" placeholder="Escribe tu nombre" required>
@@ -112,6 +129,8 @@
         <br>
         <button type="submit" class="btnGuardar">Guardar</button>
     </form>
+
+
 </div>
 </body>
 
