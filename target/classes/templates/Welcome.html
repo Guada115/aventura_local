@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenido</title>
+    <style>
+        .logo {
+            width: 200px;
+            margin: 0 auto;
+            display: block;
+            padding-top: 20px;
+        }
+
+        body {
+            background: linear-gradient(to right, rgb(9, 84, 119), rgb(129, 204, 239));
+            font-family: fantasy;
+            margin: 0;
+        }
+        span{
+            font-size: xx-large;
+
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-top: 30px;
+            color: #0e0d0d;
+            margin-bottom: 20px;
+            font-size: xxx-large;
+            text-align: center;
+        }
+
+        main {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #090808;
+            padding: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 30px;
+            color: #0e0d0d;
+            font-size: large;
+            text-align: center;
+        }
+
+        li {
+            margin: 10px 0;
+
+        }
+
+        a {
+            text-decoration: underline;
+            font-size: xx-large;
+            color: #0e0d0d;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .responsive-img {
+            width: 100%;
+            max-width: 340px;
+            height: auto;
+            margin: 10px;
+        }
+
+        .contenedor {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Media queries para pantallas pequeñas */
+        @media (max-width: 768px) {
+            h1 {
+                margin-top: 20px;
+                font-size: x-large;
+            }
+
+            .logo {
+                width: 150px;
+                padding-top: 10px;
+            }
+
+            ul {
+                font-size: medium;
+            }
+
+            .responsive-img {
+                max-width: 200px;
+            }
+        }
+
+        /* Media queries para pantallas muy pequeñas (móviles) */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: large;
+            }
+
+            .logo {
+                width: 120px;
+                padding-top: 10px;
+            }
+
+            ul {
+                font-size: small;
+                margin: 0;
+            }
+
+            .responsive-img {
+                max-width: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <img class="logo" src="logo.png" alt="Logo">
+</header>
+<main>
+    <div class="contenedor">
+        <img class="responsive-img" src="medellin.jpg" alt="Medellin">
+        <img class="responsive-img" src="medellinMano.jpg" alt="Medellin estructura mano">
+        <img class="responsive-img" src="bandejaPaisa.jpg" alt="Bandeja Paisa">
+    </div>
+    <hr>
+    <h1>Aventura local te da la bienvenida</h1>
+    <hr>
+    <div class="contenedor">
+        <ul> <span>¿Cuál es tu plan para el día de hoy?</span>
+            <li><a href="aventuras">Aventuras</a></li>
+            <li><a href="restaurantes">Restaurantes Locales</a></li>
+            <li><a href="transporte">¿Cómo transportarme?</a></li>
+            <li><a href="/">Ve al inicio</a></li>
+        </ul>
+    </div>
+</main>
+</body>
+</html>

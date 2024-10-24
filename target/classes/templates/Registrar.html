@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar</title>
+    <style>
+        body {
+            background: linear-gradient(to right, rgb(9, 84, 119), rgb(129, 204, 239));
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-family: fantasy;
+            font-size: xx-large;
+            color: whitesmoke;
+            margin-bottom: 20px;
+        }
+
+        .form-container {
+            background-color: rgb(24, 73, 95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: left;
+            width: 80%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cajaTexto {
+            width: 100%;
+            max-width: 500px;
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 10px;
+            background-color: whitesmoke;
+            border-radius: 10px;
+        }
+
+        .btnGuardar {
+            background-color: whitesmoke;
+            font-family: Arial, sans-serif;
+            width: 90px;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            margin: 0 auto;
+            text-align: center;
+            text-decoration: none;
+            color: black;
+        }
+
+        .btnGuardar:hover {
+            background-color: #ddd;
+        }
+
+        .formulario {
+            display: flex;
+            flex-direction: column;
+            align-content: center;
+            align-items: center;
+        }
+
+        .mensaje {
+            color: white;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .error {
+            color: red; /* Color para los mensajes de error */
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .success {
+            color: green; /* Color para los mensajes de éxito */
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="logo">
+    <img width="120px" src="logo.png" alt="Logo">
+</div>
+
+<div class="form-container">
+    <h1>REGISTRARSE</h1>
+
+    <!-- Mensaje de éxito -->
+    <div th:if="${mensaje}" class="success">
+        <p th:text="${mensaje}"></p>
+    </div>
+
+    <form action="/registro" method="GET" class="formulario">
+        <input type="text" id="identificacion" name="identificacion" class="cajaTexto" placeholder="Escribe tu identificación" required>
+        <br>
+        <input type="text" id="nombre" name="nombre" class="cajaTexto" placeholder="Escribe tu nombre" required>
+        <br>
+        <input type="text" id="apellido" name="apellido" class="cajaTexto" placeholder="Escribe tu apellido" required>
+        <br>
+        <input type="email" id="correo" name="correo" class="cajaTexto" placeholder="Escribe tu correo" required>
+        <br>
+        <input type="date" id="fechaNacimiento" name="fechaNacimiento" class="cajaTexto" placeholder="Fecha de nacimiento" required>
+        <br>
+        <input type="text" id="usuario" name="usuario" class="cajaTexto" placeholder="Escribe tu usuario" required>
+        <br>
+        <input type="password" id="contrasena" name="contrasena" class="cajaTexto" placeholder="Escribe tu contraseña" required>
+        <br>
+        <input type="password" id="verificarContrasena" name="verificarContrasena" class="cajaTexto" placeholder="Verifica tu contraseña" required>
+        <br>
+        <button type="submit" class="btnGuardar">Guardar</button>
+    </form>
+
+
+</div>
+</body>
+
+</html>
