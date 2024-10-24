@@ -39,4 +39,6 @@ public class Controlador_Rest
     public String crudRestaurantes(){ return "crudRestaurantes"; }
     @GetMapping("/crudAventuras")
     public String crudAventuras(){ return "crudAventuras"; }
+    @GetMapping("/crudTransporte")
+    public String crudTransporte(){ return "crudTransporte"; }
 }

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRUD de Transporte</title>
+  <style>
+    body {
+      background: linear-gradient(to right, rgb(9, 84, 119), rgb(129, 204, 239));
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .form-container {
+      background-color: rgb(24, 73, 95);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      text-align: left;
+      width: 80%;
+      max-width: 800px;
+      margin: 20px 0;
+    }
+
+    .cajaTexto {
+      width: 100%;
+      max-width: 500px;
+      padding: 10px;
+      margin-top: 10px;
+      background-color: whitesmoke;
+      border-radius: 10px;
+    }
+
+    .btnGuardar {
+      background-color: whitesmoke;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      display: block;
+      margin: 10px auto;
+      text-align: center;
+      color: black;
+    }
+
+    .transporte-item {
+      background-color: rgb(240, 240, 240);
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+  </style>
+</head>
+<body>
+<div class="form-container">
+  <h1 style="text-align: center; color: whitesmoke;">Registrar Transporte</h1>
+  <form id="transporte-form">
+    <input type="text" id="nombreTransporte" name="nombreTransporte" class="cajaTexto" placeholder="Nombre del Transporte" required>
+    <input type="text" id="tipoTransporte" name="tipoTransporte" class="cajaTexto" placeholder="Tipo de Transporte" required>
+    <input type="text" id="rutaTransporte" name="rutaTransporte" class="cajaTexto" placeholder="Ruta del Transporte" required>
+    <input type="text" id="horarioTransporte" name="horarioTransporte" class="cajaTexto" placeholder="Horario del Transporte" required>
+    <button type="submit" class="btnGuardar">Guardar</button>
+  </form>
+</div>
+
+<div id="transporte-list" class="form-container">
+  <h2 style="text-align: center; color: whitesmoke;">Lista de Transportes</h2>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    obtenerTransportes();
+
+    document.getElementById('transporte-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+
+      fetch('/api/transportes', {
+        method: 'POST',
+        body: formData
+      })
+              .then(response => response.json())
+              .then(data => {
+                if (response.ok) {
+                  console.log('Transporte agregado:', data);
+                  this.reset();
+                  obtenerTransportes();
+                } else {
+                  console.error('Error del servidor:', data);
+                  alert('Error al agregar el transporte: ' + (data.error || 'Verifica los datos ingresados.'));
+                }
+              })
+              .catch(error => {
+                console.error('Error al agregar el transporte:', error);
+                alert('Error al agregar el transporte: ' + error.message);
+              });
+    });
+
+  });
+
+  function obtenerTransportes() {
+    fetch('/api/transportes')
+            .then(response => response.json())
+            .then(data => {
+              const transporteList = document.getElementById('transporte-list');
+              transporteList.innerHTML = ''; // Limpiar la lista antes de agregar
+
+              if (Array.isArray(data) && data.length > 0) {
+                data.forEach(transporte => {
+                  const newTransporte = document.createElement('div');
+                  newTransporte.classList.add('transporte-item');
+                  newTransporte.innerHTML = `
+            <h3>${transporte.nombreTransporte}</h3>
+            <p><strong>Tipo:</strong> ${transporte.tipoTransporte}</p>
+            <p><strong>Ruta:</strong> ${transporte.rutaTransporte}</p>
+            <p><strong>Horario:</strong> ${transporte.horarioTransporte}</p>
+            <button class="btnEliminar" onclick="eliminarTransporte(${transporte.id})">Eliminar</button>
+            <button class="btnEditar" onclick="editarTransporte(${transporte.id})">Editar</button>
+          `;
+                  transporteList.appendChild(newTransporte);
+                });
+              } else {
+                transporteList.innerHTML = '<p>No hay transportes registrados.</p>';
+              }
+            })
+            .catch(error => {
+              console.error('Error al obtener la lista de transportes:', error);
+            });
+  }
+
+  function eliminarTransporte(id) {
+    // Función para eliminar un transporte (lógica similar a agregar)
+  }
+
+  function editarTransporte(id) {
+    // Función para editar un transporte (lógica similar a agregar)
+  }
+</script>
+</body>
+</html>
