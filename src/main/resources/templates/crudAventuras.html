@@ -36,7 +36,7 @@
       border-radius: 10px;
     }
 
-    .btnGuardar {
+    .btnGuardar, .btnBack, .btnLogout {
       background-color: whitesmoke;
       padding: 10px;
       border-radius: 10px;
@@ -46,6 +46,7 @@
       margin: 10px auto;
       text-align: center;
       color: black;
+      border: none;
     }
 
     .aventura-item {
@@ -74,6 +75,10 @@
     <input type="file" id="fotoAvent" name="fotoAvent" class="cajaTexto" accept="image/*" required>
     <button type="submit" class="btnGuardar">Guardar</button>
   </form>
+
+  <!-- Botones de navegación -->
+  <button class="btnBack" onclick="location.href='inicioAdmin'">Atrás</button>
+  <button class="btnLogout" onclick="location.href='indice'">Cerrar Sesión</button>
 </div>
 
 <div id="aventura-list" class="form-container">
@@ -110,7 +115,6 @@
                 alert('Error al agregar la aventura: ' + error.message);
               });
     });
-
   });
 
   function obtenerAventuras() {
@@ -133,28 +137,28 @@
                     reader.onloadend = function () {
                       const base64String = reader.result;
                       newAventura.innerHTML = `
-                                <h3>${aventura.nombreAvent}</h3>
-                                <p><strong>Tipo:</strong> ${aventura.tipoAvent}</p>
-                                <p><strong>Zona:</strong> ${aventura.zonaAvent}</p>
-                                <p><strong>Horario:</strong> ${aventura.horarioAvent}</p>
-                                <img src="${base64String}" alt="Foto de la Aventura" style="max-width: 100%; height: auto;">
-                                <br>
-                                <button class="btnEliminar" onclick="eliminarAventura(${aventura.id})">Eliminar</button>
-                                <button class="btnEditar" onclick="editarAventura(${aventura.id})">Editar</button>
-                            `;
+                  <h3>${aventura.nombreAvent}</h3>
+                  <p><strong>Tipo:</strong> ${aventura.tipoAvent}</p>
+                  <p><strong>Zona:</strong> ${aventura.zonaAvent}</p>
+                  <p><strong>Horario:</strong> ${aventura.horarioAvent}</p>
+                  <img src="${base64String}" alt="Foto de la Aventura" style="max-width: 100%; height: auto;">
+                  <br>
+                  <button class="btnEliminar" onclick="eliminarAventura(${aventura.id})">Eliminar</button>
+                  <button class="btnEditar" onclick="editarAventura(${aventura.id})">Editar</button>
+                `;
                       aventuraList.appendChild(newAventura);
                     };
                     reader.readAsDataURL(blob);
                   } else {
                     newAventura.innerHTML = `
-                            <h3>${aventura.nombreAvent}</h3>
-                            <p><strong>Tipo:</strong> ${aventura.tipoAvent}</p>
-                            <p><strong>Zona:</strong> ${aventura.zonaAvent}</p>
-                            <p><strong>Horario:</strong> ${aventura.horarioAvent}</p>
-                            <br>
-                            <button class="btnEliminar" onclick="eliminarAventura(${aventura.id})">Eliminar</button>
-                            <button class="btnEditar" onclick="editarAventura(${aventura.id})">Editar</button>
-                        `;
+                <h3>${aventura.nombreAvent}</h3>
+                <p><strong>Tipo:</strong> ${aventura.tipoAvent}</p>
+                <p><strong>Zona:</strong> ${aventura.zonaAvent}</p>
+                <p><strong>Horario:</strong> ${aventura.horarioAvent}</p>
+                <br>
+                <button class="btnEliminar" onclick="eliminarAventura(${aventura.id})">Eliminar</button>
+                <button class="btnEditar" onclick="editarAventura(${aventura.id})">Editar</button>
+              `;
                     aventuraList.appendChild(newAventura);
                   }
                 });

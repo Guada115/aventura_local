@@ -36,7 +36,7 @@
       border-radius: 10px;
     }
 
-    .btnGuardar {
+    .btnGuardar, .btnBack, .btnLogout {
       background-color: whitesmoke;
       padding: 10px;
       border-radius: 10px;
@@ -55,20 +55,24 @@
       border-radius: 10px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
-
   </style>
 </head>
 <body>
 <div class="form-container">
   <h1 style="text-align: center; color: whitesmoke;">Registrar Transporte</h1>
+
+  <!-- Botones de navegación -->
+  <div style="text-align: center;">
+    <button class="btnBack" onclick="window.location.href='inicioAdmin'">Atrás</button>
+    <button class="btnLogout" onclick="window.location.href='indice'">Cerrar Sesión</button>
+  </div>
+
   <form id="transporte-form">
     <input type="text" id="nombreTransporte" name="nombreTransporte" class="cajaTexto" placeholder="Nombre del Transporte" required>
     <input type="text" id="tipoTransporte" name="tipoTransporte" class="cajaTexto" placeholder="Tipo de Transporte" required>
     <input type="text" id="rutaTransporte" name="rutaTransporte" class="cajaTexto" placeholder="Ruta del Transporte" required>
     <input type="text" id="horarioTransporte" name="horarioTransporte" class="cajaTexto" placeholder="Horario del Transporte" required>
-
     <input type="file" id="imagenTransporte" name="imagenTransporte" class="cajaTexto" accept="image/*" required>
-
     <button type="submit" class="btnGuardar">Guardar</button>
   </form>
 </div>
