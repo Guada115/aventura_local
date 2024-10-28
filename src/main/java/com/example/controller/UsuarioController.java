@@ -4,13 +4,8 @@ import com.example.entidades.Usuario;
 import com.example.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-
-
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class UsuarioController {
@@ -18,20 +13,35 @@ public class UsuarioController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @GetMapping("/registro")
-    public String registrarUsuario(@ModelAttribute Usuario usuario, String verificarContrasena,BindingResult bindingResult,
-                                   Model model) {
-        // Verifica que las contraseñas coincidan
-        if (!usuario.getContrasena().equals(verificarContrasena)) {
-           model.addAttribute("mensaje", "Las contraseñas no coinciden.");
-            return "Registrar"; // Redirige a la vista crudRestaurantes si las contraseñas no coinciden
-        }else {
-            // Guarda el usuario en la base de datos
-            usuarioRepository.save(usuario);
-            model.addAttribute("mensaje", "Usuario registrado con éxito.");
-            return "Welcome"; // Redirige a la vista de éxito
+    @PostMapping("/registro")
+    public String registrarUsuario(
+            @RequestParam("identificacion") String identificacion,
+            @RequestParam("nombre") String nombre,
+            @RequestParam("apellido") String apellido,
+            @RequestParam("correo") String correo,
+            @RequestParam("fechaNacimiento") String fechaNacimiento,
+            @RequestParam("usuario") String usuarioNombre,
+            @RequestParam("contrasena") String contrasena,
+            @RequestParam("verificarContrasena") String verificarContrasena) {
+
+        // Verificar que las contraseñas coincidan
+        if (!contrasena.equals(verificarContrasena)) {
+            return "Registrar"; // Redirige a la vista de registro si las contraseñas no coinciden
         }
 
+        // Crear y guardar el usuario
+        Usuario usuario = new Usuario();
+        usuario.setIdentificacion(identificacion);
+        usuario.setNombre(nombre);
+        usuario.setApellido(apellido);
+        usuario.setCorreo(correo);
+        usuario.setFechaNacimiento(java.sql.Date.valueOf(fechaNacimiento));
+        usuario.setUsuario(usuarioNombre);
+        usuario.setContrasena(contrasena);
 
+        usuarioRepository.save(usuario);
+
+        // Redirige a la vista de bienvenida sin mensaje
+        return "Welcome";
     }
 }
