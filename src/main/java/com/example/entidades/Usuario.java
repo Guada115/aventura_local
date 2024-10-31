@@ -2,9 +2,10 @@ package com.example.entidades;
 
 import jakarta.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
-@Table(name = "USUARIOS")
+@Table(name = "usuarios")
 public class Usuario {
 
     @Id
@@ -35,6 +36,15 @@ public class Usuario {
 
     @Column(name = "CONTRASENA", nullable = false)
     private String contrasena;
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Aventura> aventuras;
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Transporte> transportes;
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Restaurante> restaurantes;
 
 
     // Getters y Setters
@@ -92,6 +102,30 @@ public class Usuario {
 
     public void setContrasena(String contrasena) {
         this.contrasena = contrasena;
+    }
+
+    public List<Aventura> getAventuras() {
+        return aventuras;
+    }
+
+    public void setAventuras(List<Aventura> aventuras) {
+        this.aventuras = aventuras;
+    }
+
+    public List<Transporte> getTransportes() {
+        return transportes;
+    }
+
+    public void setTransportes(List<Transporte> transportes) {
+        this.transportes = transportes;
+    }
+
+    public List<Restaurante> getRestaurantes() {
+        return restaurantes;
+    }
+
+    public void setRestaurantes(List<Restaurante> restaurantes) {
+        this.restaurantes = restaurantes;
     }
 
 }

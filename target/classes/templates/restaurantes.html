@@ -33,8 +33,10 @@
 
         .card-img-top {
             width: 100%;
-            height: 200px;
-            object-fit: cover;
+            max-width: 300px; /* Ancho máximo para no desbordar */
+            height: auto; /* Altura automática para mantener la proporción */
+            object-fit: cover; /* Ajusta la imagen para que cubra el contenedor */
+            border-radius: 10px; /* Bordes redondeados */
         }
 
         .restaurant-item {
@@ -81,8 +83,8 @@
                 </div>
             </div>
             <div class="d-flex align-items-center">
-                <a href="login" class="btn btn-outline-primary me-2" style="background-color: rgb(7, 58, 82);">Iniciar Sesión</a>
-                <a href="registrar" class="btn btn-primary" style="background-color: rgb(7, 58, 82);">Registrarse</a>
+                <a href="inicioAdmin" class="btn btn-secondary me-2">Atrás</a>
+                <a href="/" class="btn btn-danger">Cerrar Sesión</a>
                 <img src="logo.png" alt="Logo" style="width: 140px; margin-left: 10px;">
             </div>
         </div>
@@ -103,32 +105,49 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        obtenerRestaurantes();
+    });
+
+    function obtenerRestaurantes() {
         fetch('/api/restaurantes')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 const restaurantList = document.getElementById('restaurant-list');
+                restaurantList.innerHTML = ''; // Limpiar contenido anterior
 
-                data.forEach(restaurante => {
-                    const restaurantItem = document.createElement('div');
-                    restaurantItem.classList.add('restaurant-item');
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(restaurante => {
+                        const restaurantItem = document.createElement('div');
+                        restaurantItem.classList.add('restaurant-item');
 
-                    // Aquí usamos directamente fotoBase64 que ya está en base64
-                    restaurantItem.innerHTML = `
-                    <h3>${restaurante.nombre}</h3>
-                    <p><strong>Horario:</strong> ${restaurante.horario}</p>
-                    <p><strong>Sector:</strong> ${restaurante.sector}</p>
-                    <p><strong>Tipo de Comida:</strong> ${restaurante.tipoComida}</p>
-                    <img src="data:image/jpeg;base64,${restaurante.fotoBase64}" alt="Foto del Restaurante" class="card-img-top">
-                `;
+                        // Verifica el contenido de foto
+                        const imgElement = restaurante.foto
+                            ? `<img src="data:image/jpeg;base64,${restaurante.foto}" alt="Foto del Restaurante" class="card-img-top">`
+                            : '<p>No hay imagen disponible</p>'; // Mensaje si no hay imagen
 
-                    restaurantList.appendChild(restaurantItem);
-                });
+                        restaurantItem.innerHTML = `
+                        <h3>${restaurante.nombre}</h3>
+                        <p><strong>Horario:</strong> ${restaurante.horario}</p>
+                        <p><strong>Sector:</strong> ${restaurante.sector}</p>
+                        <p><strong>Tipo de Comida:</strong> ${restaurante.tipoComida}</p>
+                        ${imgElement}
+                    `;
+
+                        restaurantList.appendChild(restaurantItem);
+                    });
+                } else {
+                    restaurantList.innerHTML = '<p>No hay restaurantes registrados.</p>';
+                }
             })
             .catch(error => {
                 console.error('Error al obtener la lista de restaurantes:', error);
             });
-    });
-
+    }
 </script>
 </body>
 </html>

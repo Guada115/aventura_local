@@ -1,22 +1,28 @@
 package com.example.entidades;
 
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "aventuras")
 public class Aventura {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    @Id // Esto indica que este campo es la clave primaria
     private String nombreAvent;
+
     private String tipoAvent;
     private String zonaAvent;
     private String horarioAvent;
 
     @Lob
     private byte[] fotoAvent;
+
+    @ManyToOne
+    @JoinColumn(name = "fk_usuario_identificacion")
+    private Usuario usuario;
+
+    @ManyToMany(mappedBy = "aventuras")
+    private List<Transporte> transportes;
 
     public Aventura() {
     }
@@ -30,14 +36,6 @@ public class Aventura {
     }
 
     // Getters y Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getNombreAvent() {
         return nombreAvent;
     }
@@ -76,5 +74,21 @@ public class Aventura {
 
     public void setFotoAvent(byte[] fotoAvent) {
         this.fotoAvent = fotoAvent;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public List<Transporte> getTransportes() {
+        return transportes;
+    }
+
+    public void setTransportes(List<Transporte> transportes) {
+        this.transportes = transportes;
     }
 }

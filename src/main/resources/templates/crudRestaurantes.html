@@ -48,7 +48,7 @@
             color: black;
         }
 
-        .restaurant-item {
+        .restaurante-item {
             background-color: rgb(240, 240, 240);
             margin: 10px 0;
             padding: 10px;
@@ -71,10 +71,10 @@
     <!-- Botones de navegación -->
     <div style="text-align: center;">
         <button class="btnBack" onclick="window.location.href='inicioAdmin'">Atrás</button>
-        <button class="btnLogout" onclick="window.location.href='indice'">Cerrar Sesión</button>
+        <button class="btnLogout" onclick="window.location.href='/'">Cerrar Sesión</button>
     </div>
 
-    <form id="restaurant-form">
+    <form id="restaurante-form">
         <input type="text" id="nombre" name="nombre" class="cajaTexto" placeholder="Nombre del Restaurante" required>
         <input type="text" id="horario" name="horario" class="cajaTexto" placeholder="Horario" required>
         <input type="text" id="sector" name="sector" class="cajaTexto" placeholder="Sector" required>
@@ -92,24 +92,28 @@
     document.addEventListener('DOMContentLoaded', function() {
         obtenerRestaurantes();
 
-        document.getElementById('restaurant-form').addEventListener('submit', function (e) {
-            e.preventDefault(); // Prevenir el comportamiento predeterminado
-
-            const formData = new FormData(this); // Obtener los datos del formulario
+        document.getElementById('restaurante-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
 
             fetch('/api/restaurantes', {
                 method: 'POST',
                 body: formData
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Verifica los datos ingresados.');
+                        });
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     console.log('Restaurante agregado:', data);
-                    this.reset(); // Limpiar el formulario
-                    obtenerRestaurantes(); // Obtener la lista actualizada de restaurantes
+                    this.reset();
+                    obtenerRestaurantes();
                 })
-                .catch(error => {
-                    console.error('Error al agregar el restaurante:', error);
-                });
+                .catch(error => alert('Error al agregar el restaurante: ' + error.message));
         });
     });
 
@@ -117,83 +121,45 @@
         fetch('/api/restaurantes')
             .then(response => response.json())
             .then(data => {
-                const restaurantList = document.getElementById('restaurant-list');
-                restaurantList.innerHTML = ''; // Limpiar la lista antes de agregar
+                const restauranteList = document.getElementById('restaurant-list');
+                restauranteList.innerHTML = '';
 
-                data.forEach(restaurante => {
-                    const newRestaurant = document.createElement('div');
-                    newRestaurant.classList.add('restaurant-item');
-
-                    // Convertir la foto a base64 para mostrarla
-                    const base64String = btoa(String.fromCharCode(...new Uint8Array(restaurante.foto)));
-
-                    newRestaurant.innerHTML = `
-                    <h3>${restaurante.nombre}</h3>
-                    <p><strong>Horario:</strong> ${restaurante.horario}</p>
-                    <p><strong>Sector:</strong> ${restaurante.sector}</p>
-                    <p><strong>Tipo de Comida:</strong> ${restaurante.tipoComida}</p>
-                    <img src="data:image/jpeg;base64,${base64String}" alt="Foto del Restaurante">
-                    <br>
-                    <button class="btnEliminar" onclick="eliminarRestaurante(${restaurante.id})">Eliminar</button>
-                    <button class="btnEditar" onclick="editarRestaurante(${restaurante.id})">Editar</button>
-                `;
-
-                    restaurantList.appendChild(newRestaurant);
-                });
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(restaurante => {
+                        const newRestaurante = document.createElement('div');
+                        newRestaurante.classList.add('restaurante-item');
+                        newRestaurante.innerHTML = `
+                            <h3>${restaurante.nombre}</h3>
+                            <p><strong>Horario:</strong> ${restaurante.horario}</p>
+                            <p><strong>Sector:</strong> ${restaurante.sector}</p>
+                            <p><strong>Tipo de Comida:</strong> ${restaurante.tipoComida}</p>
+                            ${restaurante.foto ? `<img src="data:image/jpeg;base64,${restaurante.foto}" alt="Foto del Restaurante">` : ''}
+                            <button class="btnEliminar" onclick="eliminarRestaurante('${restaurante.nombre}')">Eliminar</button>
+                            <button class="btnEditar" onclick="editarRestaurante('${restaurante.nombre}')">Editar</button>
+                        `;
+                        restauranteList.appendChild(newRestaurante);
+                    });
+                } else {
+                    restauranteList.innerHTML = '<p>No hay restaurantes registrados.</p>';
+                }
             })
-            .catch(error => {
-                console.error('Error al obtener la lista de restaurantes:', error);
-            });
+            .catch(error => alert('Error al obtener la lista de restaurantes: ' + error.message));
     }
 
-    function eliminarRestaurante(id) {
-        fetch(`/api/restaurantes/${id}`, {
-            method: 'DELETE'
-        })
-            .then(() => {
-                obtenerRestaurantes(); // Actualiza la lista después de eliminar
+    function eliminarRestaurante(nombre) {
+        if (confirm('¿Estás seguro de que deseas eliminar este restaurante?')) {
+            fetch(`/api/restaurantes/${nombre}`, {
+                method: 'DELETE'
             })
-            .catch(error => {
-                console.error('Error al eliminar el restaurante:', error);
-            });
+                .then(() => obtenerRestaurantes())
+                .catch(error => alert('Error al eliminar el restaurante: ' + error.message));
+        }
     }
 
-    function editarRestaurante(id) {
-        // Primero, obtén los datos del restaurante seleccionado
-        fetch(`/api/restaurantes/${id}`)
-            .then(response => response.json())
-            .then(restaurante => {
-                // Rellenar el formulario con los datos del restaurante
-                document.getElementById('nombre').value = restaurante.nombre;
-                document.getElementById('horario').value = restaurante.horario;
-                document.getElementById('sector').value = restaurante.sector;
-                document.getElementById('tipoComida').value = restaurante.tipoComida;
-
-                // Cambiar la lógica de envío para la actualización
-                document.getElementById('restaurant-form').onsubmit = function (e) {
-                    e.preventDefault();
-                    const formData = new FormData(this);
-
-                    // Enviar la solicitud de actualización
-                    fetch(`/api/restaurantes/${id}`, {
-                        method: 'PUT', // Método PUT para actualizar
-                        body: formData
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log('Restaurante actualizado:', data);
-                            this.reset(); // Limpiar el formulario
-                            obtenerRestaurantes(); // Obtener la lista actualizada de restaurantes
-                        })
-                        .catch(error => {
-                            console.error('Error al actualizar el restaurante:', error);
-                        });
-                };
-            })
-            .catch(error => {
-                console.error('Error al obtener el restaurante:', error);
-            });
+    function editarRestaurante(nombre) {
+        alert('Funcionalidad de edición en desarrollo');
     }
 </script>
+
 </body>
 </html>

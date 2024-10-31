@@ -64,7 +64,7 @@
   <!-- Botones de navegación -->
   <div style="text-align: center;">
     <button class="btnBack" onclick="window.location.href='inicioAdmin'">Atrás</button>
-    <button class="btnLogout" onclick="window.location.href='indice'">Cerrar Sesión</button>
+    <button class="btnLogout" onclick="window.location.href='/'">Cerrar Sesión</button>
   </div>
 
   <form id="transporte-form">
@@ -72,84 +72,83 @@
     <input type="text" id="tipoTransporte" name="tipoTransporte" class="cajaTexto" placeholder="Tipo de Transporte" required>
     <input type="text" id="rutaTransporte" name="rutaTransporte" class="cajaTexto" placeholder="Ruta del Transporte" required>
     <input type="text" id="horarioTransporte" name="horarioTransporte" class="cajaTexto" placeholder="Horario del Transporte" required>
-    <input type="file" id="imagenTransporte" name="imagenTransporte" class="cajaTexto" accept="image/*" required>
-    <button type="submit" class="btnGuardar">Guardar</button>
+    <input type="file" id="imagenTransporte" name="imagenTransporte" accept="image/*" class="cajaTexto" required>
+    <button type="submit" class="btnGuardar">Guardar Transporte</button>
   </form>
 </div>
 
-<div id="transporte-list" class="form-container">
-  <h2 style="text-align: center; color: whitesmoke;">Lista de Transportes</h2>
-</div>
+<div id="transporte-list"></div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    obtenerTransportes();
+  document.getElementById('transporte-form').onsubmit = function(event) {
+    event.preventDefault();
 
-    document.getElementById('transporte-form').addEventListener('submit', function (e) {
-      e.preventDefault();
+    const formData = new FormData(this);
 
-      const formData = new FormData(this);
-
-      fetch('/api/transportes', {
-        method: 'POST',
-        body: formData
-      })
-              .then(response => response.json())
-              .then(data => {
-                if (response.ok) {
-                  console.log('Transporte agregado:', data);
-                  this.reset();
-                  obtenerTransportes();
-                } else {
-                  console.error('Error del servidor:', data);
-                  alert('Error al agregar el transporte: ' + (data.error || 'Verifica los datos ingresados.'));
-                }
-              })
-              .catch(error => {
-                console.error('Error al agregar el transporte:', error);
-                alert('Error al agregar el transporte: ' + error.message);
-              });
-    });
-
-  });
+    fetch('/api/transportes', {
+      method: 'POST',
+      body: formData
+    })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Error al guardar el transporte');
+              }
+              return response.json();
+            })
+            .then(data => {
+              alert('Transporte guardado exitosamente');
+              obtenerTransportes(); // Actualizar la lista de transportes
+            })
+            .catch(error => {
+              alert('Error: ' + error.message);
+            });
+  };
 
   function obtenerTransportes() {
     fetch('/api/transportes')
             .then(response => response.json())
             .then(data => {
               const transporteList = document.getElementById('transporte-list');
-              transporteList.innerHTML = ''; // Limpiar la lista antes de agregar
+              transporteList.innerHTML = '';
 
               if (Array.isArray(data) && data.length > 0) {
                 data.forEach(transporte => {
                   const newTransporte = document.createElement('div');
                   newTransporte.classList.add('transporte-item');
                   newTransporte.innerHTML = `
-            <h3>${transporte.nombreTransporte}</h3>
-            <p><strong>Tipo:</strong> ${transporte.tipoTransporte}</p>
-            <p><strong>Ruta:</strong> ${transporte.rutaTransporte}</p>
-            <p><strong>Horario:</strong> ${transporte.horarioTransporte}</p>
-            <button class="btnEliminar" onclick="eliminarTransporte(${transporte.id})">Eliminar</button>
-            <button class="btnEditar" onclick="editarTransporte(${transporte.id})">Editar</button>
-          `;
+              <h3>${transporte.nombreTransporte}</h3>
+              <p><strong>Tipo:</strong> ${transporte.tipoTransporte}</p>
+              <p><strong>Ruta:</strong> ${transporte.rutaTransporte}</p>
+              <p><strong>Horario:</strong> ${transporte.horarioTransporte}</p>
+              ${transporte.imagenTransporte ? `<img src="data:image/jpeg;base64,${transporte.imagenTransporte}" alt="Imagen de Transporte" style="max-width: 100%; height: auto; border-radius: 10px;">` : ''}
+              <button class="btnEliminar" onclick="eliminarTransporte('${transporte.nombreTransporte}')">Eliminar</button>
+              <button class="btnEditar" onclick="editarTransporte('${transporte.nombreTransporte}')">Editar</button>
+            `;
                   transporteList.appendChild(newTransporte);
                 });
               } else {
                 transporteList.innerHTML = '<p>No hay transportes registrados.</p>';
               }
             })
-            .catch(error => {
-              console.error('Error al obtener la lista de transportes:', error);
-            });
+            .catch(error => alert('Error al obtener la lista de transportes: ' + error.message));
   }
 
-  function eliminarTransporte(id) {
-    // Función para eliminar un transporte (lógica similar a agregar)
+  function eliminarTransporte(nombre) {
+    fetch(`/api/transportes/${nombre}`, {
+      method: 'DELETE'
+    })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Error al eliminar el transporte');
+              }
+              alert('Transporte eliminado exitosamente');
+              obtenerTransportes(); // Actualizar la lista de transportes
+            })
+            .catch(error => alert('Error: ' + error.message));
   }
 
-  function editarTransporte(id) {
-    // Función para editar un transporte (lógica similar a agregar)
-  }
+  // Cargar la lista de transportes al iniciar la página
+  window.onload = obtenerTransportes;
 </script>
 </body>
 </html>

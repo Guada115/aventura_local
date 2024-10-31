@@ -7,8 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/transportes")
@@ -19,14 +21,25 @@ public class TransporteController {
 
     // Obtener todos los transportes
     @GetMapping
-    public List<Transporte> getAllTransportes() {
-        return transporteRepository.findAll();
+    public List<Map<String, Object>> getAllTransportes() {
+        List<Transporte> transportes = transporteRepository.findAll();
+        return transportes.stream()
+                .map(transporte -> {
+                    Map<String, Object> transporteData = new HashMap<>();
+                    transporteData.put("nombreTransporte", transporte.getNombreTransporte());
+                    transporteData.put("tipoTransporte", transporte.getTipoTransporte());
+                    transporteData.put("rutaTransporte", transporte.getRutaTransporte());
+                    transporteData.put("horarioTransporte", transporte.getHorarioTransporte());
+                    transporteData.put("imagenTransporte", transporte.getImagenBase64()); // Agregar imagen como Base64
+                    return transporteData;
+                })
+                .collect(Collectors.toList());
     }
 
-    // Obtener transporte por ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Transporte> getTransporteById(@PathVariable Long id) {
-        Transporte transporte = transporteRepository.findById(id)
+    // Obtener transporte por nombre
+    @GetMapping("/{nombreTransporte}")
+    public ResponseEntity<Transporte> getTransporteByNombre(@PathVariable String nombreTransporte) {
+        Transporte transporte = transporteRepository.findById(nombreTransporte)
                 .orElseThrow(() -> new RuntimeException("Transporte no encontrado"));
         return ResponseEntity.ok(transporte);
     }
@@ -40,13 +53,8 @@ public class TransporteController {
             @RequestParam String horarioTransporte,
             @RequestParam("imagenTransporte") MultipartFile imagenTransporte) {
         try {
-            // Convertir la imagen a un arreglo de bytes
             byte[] imagenBytes = imagenTransporte.getBytes();
-
-            // Crear el objeto transporte
             Transporte transporte = new Transporte(nombreTransporte, tipoTransporte, rutaTransporte, horarioTransporte, imagenBytes);
-
-            // Guardar en la base de datos
             Transporte savedTransporte = transporteRepository.save(transporte);
             return ResponseEntity.ok(savedTransporte);
         } catch (Exception e) {
@@ -55,29 +63,25 @@ public class TransporteController {
     }
 
     // Actualizar un transporte existente (con posibilidad de actualizar la imagen)
-    @PutMapping("/{id}")
+    @PutMapping("/{nombreTransporte}")
     public ResponseEntity<Transporte> updateTransporte(
-            @PathVariable Long id,
-            @RequestParam String nombreTransporte,
+            @PathVariable String nombreTransporte,
             @RequestParam String tipoTransporte,
             @RequestParam String rutaTransporte,
             @RequestParam String horarioTransporte,
             @RequestParam(value = "imagenTransporte", required = false) MultipartFile imagenTransporte) {
 
-        Transporte transporte = transporteRepository.findById(id)
+        Transporte transporte = transporteRepository.findById(nombreTransporte)
                 .orElseThrow(() -> new RuntimeException("Transporte no encontrado"));
 
-        // Actualizar campos de texto
-        transporte.setNombreTransporte(nombreTransporte);
         transporte.setTipoTransporte(tipoTransporte);
         transporte.setRutaTransporte(rutaTransporte);
         transporte.setHorarioTransporte(horarioTransporte);
 
-        // Si se proporciona una nueva imagen, actualizarla
         if (imagenTransporte != null && !imagenTransporte.isEmpty()) {
             try {
                 byte[] imagenBytes = imagenTransporte.getBytes();
-                transporte.setImagenTransporte(imagenBytes);
+                transporte.setFotoTransporte(imagenBytes);
             } catch (Exception e) {
                 return ResponseEntity.status(400).body(null);
             }
@@ -88,9 +92,9 @@ public class TransporteController {
     }
 
     // Eliminar un transporte
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTransporte(@PathVariable Long id) {
-        Transporte transporte = transporteRepository.findById(id)
+    @DeleteMapping("/{nombreTransporte}")
+    public ResponseEntity<Void> deleteTransporte(@PathVariable String nombreTransporte) {
+        Transporte transporte = transporteRepository.findById(nombreTransporte)
                 .orElseThrow(() -> new RuntimeException("Transporte no encontrado"));
         transporteRepository.delete(transporte);
         return ResponseEntity.noContent().build();

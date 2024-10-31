@@ -36,7 +36,7 @@
       border-radius: 10px;
     }
 
-    .btnGuardar, .btnBack, .btnLogout {
+    .btnGuardar {
       background-color: whitesmoke;
       padding: 10px;
       border-radius: 10px;
@@ -46,7 +46,6 @@
       margin: 10px auto;
       text-align: center;
       color: black;
-      border: none;
     }
 
     .aventura-item {
@@ -57,28 +56,42 @@
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
-    img {
-      max-width: 100%;
-      height: auto;
+    .btnNavegacion {
+      background-color: #f0f0f0;
+      padding: 10px;
       border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 5px;
+      text-align: center;
+      color: black;
+      border: none;
+    }
+
+    .btnNavegacion:hover {
+      background-color: #e0e0e0;
     }
   </style>
 </head>
 <body>
+
 <div class="form-container">
   <h1 style="text-align: center; color: whitesmoke;">Registrar Aventura</h1>
+
+  <!-- Botones de navegación -->
+  <div style="text-align: center;">
+    <button class="btnNavegacion" onclick="location.href='inicioAdmin'">Atrás</button>
+    <button class="btnNavegacion" onclick="location.href='/'">Cerrar Sesión</button>
+  </div>
+
   <form id="aventura-form">
     <input type="text" id="nombreAvent" name="nombreAvent" class="cajaTexto" placeholder="Nombre de la Aventura" required>
     <input type="text" id="tipoAvent" name="tipoAvent" class="cajaTexto" placeholder="Tipo de Aventura" required>
-    <input type="text" id="zonaAvent" name="zonaAvent" class="cajaTexto" placeholder="Zona de la Aventura" required>
-    <input type="text" id="horarioAvent" name="horarioAvent" class="cajaTexto" placeholder="Horario" required>
-    <input type="file" id="fotoAvent" name="fotoAvent" class="cajaTexto" accept="image/*" required>
+    <input type="text" id="zonaAvent" name="zonaAvent" class="cajaTexto" placeholder="Zona de Aventura" required>
+    <input type="text" id="horarioAvent" name="horarioAvent" class="cajaTexto" placeholder="Horario de Aventura" required>
+    <input type="file" id="fotoAvent" name="fotoAvent" class="cajaTexto" accept="image/*">
     <button type="submit" class="btnGuardar">Guardar</button>
   </form>
-
-  <!-- Botones de navegación -->
-  <button class="btnBack" onclick="location.href='inicioAdmin'">Atrás</button>
-  <button class="btnLogout" onclick="location.href='indice'">Cerrar Sesión</button>
 </div>
 
 <div id="aventura-list" class="form-container">
@@ -91,29 +104,26 @@
 
     document.getElementById('aventura-form').addEventListener('submit', function (e) {
       e.preventDefault();
-
       const formData = new FormData(this);
 
       fetch('/api/aventuras', {
         method: 'POST',
         body: formData
       })
-              .then(response => response.json()
-                      .then(data => {
-                        if (response.ok) {
-                          console.log('Aventura agregada:', data);
-                          this.reset();
-                          obtenerAventuras();
-                        } else {
-                          console.error('Error del servidor:', data);
-                          alert('Error al agregar la aventura: ' + (data.error || 'Verifica los datos ingresados.'));
-                        }
-                      })
-              )
-              .catch(error => {
-                console.error('Error al agregar la aventura:', error);
-                alert('Error al agregar la aventura: ' + error.message);
-              });
+              .then(response => {
+                if (!response.ok) {
+                  return response.json().then(data => {
+                    throw new Error(data.error || 'Verifica los datos ingresados.');
+                  });
+                }
+                return response.json();
+              })
+              .then(data => {
+                console.log('Aventura agregada:', data);
+                this.reset();
+                obtenerAventuras();
+              })
+              .catch(error => alert('Error al agregar la aventura: ' + error.message));
     });
   });
 
@@ -122,56 +132,44 @@
             .then(response => response.json())
             .then(data => {
               const aventuraList = document.getElementById('aventura-list');
-              aventuraList.innerHTML = ''; // Limpiar la lista antes de agregar
+              aventuraList.innerHTML = '';
 
               if (Array.isArray(data) && data.length > 0) {
                 data.forEach(aventura => {
                   const newAventura = document.createElement('div');
                   newAventura.classList.add('aventura-item');
-
-                  if (aventura.fotoAvent) {
-                    // Crear el Blob y leerlo como base64
-                    const byteArray = new Uint8Array(aventura.fotoAvent);
-                    const blob = new Blob([byteArray], { type: 'image/jpeg' }); // Cambia a 'image/png' si es necesario
-                    const reader = new FileReader();
-                    reader.onloadend = function () {
-                      const base64String = reader.result;
-                      newAventura.innerHTML = `
-                  <h3>${aventura.nombreAvent}</h3>
-                  <p><strong>Tipo:</strong> ${aventura.tipoAvent}</p>
-                  <p><strong>Zona:</strong> ${aventura.zonaAvent}</p>
-                  <p><strong>Horario:</strong> ${aventura.horarioAvent}</p>
-                  <img src="${base64String}" alt="Foto de la Aventura" style="max-width: 100%; height: auto;">
-                  <br>
-                  <button class="btnEliminar" onclick="eliminarAventura(${aventura.id})">Eliminar</button>
-                  <button class="btnEditar" onclick="editarAventura(${aventura.id})">Editar</button>
-                `;
-                      aventuraList.appendChild(newAventura);
-                    };
-                    reader.readAsDataURL(blob);
-                  } else {
-                    newAventura.innerHTML = `
-                <h3>${aventura.nombreAvent}</h3>
-                <p><strong>Tipo:</strong> ${aventura.tipoAvent}</p>
-                <p><strong>Zona:</strong> ${aventura.zonaAvent}</p>
-                <p><strong>Horario:</strong> ${aventura.horarioAvent}</p>
-                <br>
-                <button class="btnEliminar" onclick="eliminarAventura(${aventura.id})">Eliminar</button>
-                <button class="btnEditar" onclick="editarAventura(${aventura.id})">Editar</button>
-              `;
-                    aventuraList.appendChild(newAventura);
-                  }
+                  newAventura.innerHTML = `
+                            <h3>${aventura.nombreAvent}</h3>
+                            <p><strong>Tipo:</strong> ${aventura.tipoAvent}</p>
+                            <p><strong>Zona:</strong> ${aventura.zonaAvent}</p>
+                            <p><strong>Horario:</strong> ${aventura.horarioAvent}</p>
+                            ${aventura.fotoAvent ? `<img src="data:image/jpeg;base64,${aventura.fotoAvent}" alt="Foto de la Aventura" style="width: 100%; max-width: 300px; border-radius: 10px;">` : ''}
+                            <button class="btnEliminar" onclick="eliminarAventura('${aventura.nombreAvent}')">Eliminar</button>
+                            <button class="btnEditar" onclick="editarAventura('${aventura.nombreAvent}')">Editar</button>
+                        `;
+                  aventuraList.appendChild(newAventura);
                 });
               } else {
                 aventuraList.innerHTML = '<p>No hay aventuras registradas.</p>';
               }
             })
-            .catch(error => {
-              console.error('Error al obtener la lista de aventuras:', error);
-            });
+            .catch(error => alert('Error al obtener la lista de aventuras: ' + error.message));
   }
 
-  // Similar lógica para eliminar y editar
+  function eliminarAventura(nombreAvent) {
+    if (confirm('¿Estás seguro de que deseas eliminar esta aventura?')) {
+      fetch(`/api/aventuras/${nombreAvent}`, {
+        method: 'DELETE'
+      })
+              .then(() => obtenerAventuras())
+              .catch(error => alert('Error al eliminar la aventura: ' + error.message));
+    }
+  }
+
+  function editarAventura(nombreAvent) {
+    alert('Funcionalidad de edición en desarrollo');
+  }
 </script>
+
 </body>
 </html>

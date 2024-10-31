@@ -3,13 +3,13 @@ package com.example.controller;
 import com.example.entidades.Aventura;
 import com.example.repository.AventuraRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.Map;
-
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.List;
 
 @RestController
@@ -24,46 +24,24 @@ public class AventuraController {
         return aventuraRepository.findAll();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Aventura> getAventuraById(@PathVariable Long id) {
-        Aventura aventura = aventuraRepository.findById(id)
+    @GetMapping("/{nombreAvent}")
+    public ResponseEntity<Aventura> getAventuraByNombre(@PathVariable String nombreAvent) {
+        Aventura aventura = aventuraRepository.findById(nombreAvent)
                 .orElseThrow(() -> new RuntimeException("Aventura no encontrada"));
         return ResponseEntity.ok(aventura);
     }
 
-
-    @PostMapping
-    public ResponseEntity<?> createAventura(
-            @RequestParam String nombreAvent,
-            @RequestParam String tipoAvent,
-            @RequestParam String zonaAvent,
-            @RequestParam String horarioAvent,
-            @RequestParam("fotoAvent") MultipartFile fotoAvent) {
-        try {
-            Aventura aventura = new Aventura(nombreAvent, tipoAvent, zonaAvent, horarioAvent, fotoAvent.getBytes());
-            Aventura savedAventura = aventuraRepository.save(aventura);
-            return ResponseEntity.ok(savedAventura);
-        } catch (IOException e) {
-            return ResponseEntity.status(400).body(Map.of("error", "Error al procesar la imagen: " + e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(400).body(Map.of("error", "Error al guardar la aventura: " + e.getMessage()));
-        }
-    }
-
-
-    @PutMapping("/{id}")
+    @PutMapping("/{nombreAvent}")
     public ResponseEntity<Aventura> updateAventura(
-            @PathVariable Long id,
-            @RequestParam String nombreAvent,
+            @PathVariable String nombreAvent,
             @RequestParam String tipoAvent,
             @RequestParam String zonaAvent,
             @RequestParam String horarioAvent,
             @RequestParam(required = false) MultipartFile fotoAvent) throws IOException {
 
-        Aventura aventura = aventuraRepository.findById(id)
+        Aventura aventura = aventuraRepository.findById(nombreAvent)
                 .orElseThrow(() -> new RuntimeException("Aventura no encontrada"));
 
-        aventura.setNombreAvent(nombreAvent);
         aventura.setTipoAvent(tipoAvent);
         aventura.setZonaAvent(zonaAvent);
         aventura.setHorarioAvent(horarioAvent);
@@ -76,11 +54,35 @@ public class AventuraController {
         return ResponseEntity.ok(updatedAventura);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAventura(@PathVariable Long id) {
-        Aventura aventura = aventuraRepository.findById(id)
+    @DeleteMapping("/{nombreAvent}")
+    public ResponseEntity<Void> deleteAventura(@PathVariable String nombreAvent) {
+        Aventura aventura = aventuraRepository.findById(nombreAvent)
                 .orElseThrow(() -> new RuntimeException("Aventura no encontrada"));
         aventuraRepository.delete(aventura);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping
+    public ResponseEntity<Aventura> agregarAventura(
+            @RequestParam String nombreAvent,
+            @RequestParam String tipoAvent,
+            @RequestParam String zonaAvent,
+            @RequestParam String horarioAvent,
+            @RequestParam(required = false) MultipartFile fotoAvent) throws IOException {
+
+        Aventura nuevaAventura = new Aventura();
+        nuevaAventura.setNombreAvent(nombreAvent);
+        nuevaAventura.setTipoAvent(tipoAvent);
+        nuevaAventura.setZonaAvent(zonaAvent);
+        nuevaAventura.setHorarioAvent(horarioAvent);
+
+        if (fotoAvent != null && !fotoAvent.isEmpty()) {
+            nuevaAventura.setFotoAvent(fotoAvent.getBytes());
+        }
+
+        Aventura savedAventura = aventuraRepository.save(nuevaAventura);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedAventura);
+    }
+
+
 }
