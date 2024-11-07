@@ -8,7 +8,8 @@ import java.util.List;
 @Table(name = "transporte")
 public class Transporte {
 
-    @Id // Indica que este campo es la clave primaria
+    @Id // Esto indica que este campo es la clave primaria
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String nombreTransporte; // Campo que será la clave primaria
     private String tipoTransporte;
     private String rutaTransporte;

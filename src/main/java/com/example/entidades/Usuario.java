@@ -8,8 +8,8 @@ import java.util.List;
 @Table(name = "usuarios")
 public class Usuario {
 
-    @Id
-
+    @Id // Esto indica que este campo es la clave primaria
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IDENTIFICACION", nullable = false)
     private String identificacion;
 

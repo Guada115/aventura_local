@@ -8,6 +8,7 @@ import java.util.List;
 public class Aventura {
 
     @Id // Esto indica que este campo es la clave primaria
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String nombreAvent;
 
     private String tipoAvent;

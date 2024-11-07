@@ -7,7 +7,8 @@ import java.util.List;
 @Table(name = "restaurantes")
 public class Restaurante {
 
-    @Id // Indica que este campo es la clave primaria
+    @Id // Esto indica que este campo es la clave primaria
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String nombre; // Campo que será la clave primaria
 
     private String horario;
