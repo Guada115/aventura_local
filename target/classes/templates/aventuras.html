@@ -32,6 +32,16 @@
             text-align: center;
         }
 
+        .container-fluid {
+            background-color: rgb(9, 84, 119);
+        }
+
+        span {
+            font-family: fantasy;
+            font-size: xx-large;
+            color: whitesmoke;
+        }
+
         .card-img-top {
             width: 100%;
             max-width: 300px; /* Ancho máximo para no desbordar */
@@ -63,20 +73,21 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="restaurantes"><span>Restaurantes</span></a>
+                            <a class="nav-link active" aria-current="page" href="restaurantes"><span>Restaurantes</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="aventuras"><span>Aventuras</span></a>
+                            <a class="nav-link" href="aventuras"><span>Aventuras</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#"><span>Transporte</span></a>
+                            <a class="nav-link" href="transportes"><span>Transporte</span></a>
                         </li>
                     </ul>
                 </div>
             </div>
             <div class="d-flex align-items-center">
-                <a href="inicioAdmin" class="btn btn-secondary me-2">Atrás</a>
-                <a href="/" class="btn btn-danger">Cerrar Sesión</a>
+                <a href="login" class="btn btn-outline-primary me-2" style="background-color: rgb(7, 58, 82);">Iniciar
+                    Sesión</a>
+                <a href="registrar" class="btn btn-primary" style="background-color: rgb(7, 58, 82);">Registrarse</a>
                 <img src="logo.png" alt="Logo" style="width: 140px; margin-left: 10px;">
             </div>
         </div>
@@ -86,7 +97,7 @@
 <h2>Aventuras</h2>
 
 <div id="adventure-list" class="container mt-4">
-    <!-- Lista de aventuras se cargará aquí -->
+    <!-- La lista de aventuras se cargará aquí -->
 </div>
 
 <footer class="footer mt-auto">
@@ -117,18 +128,18 @@
                         const adventureItem = document.createElement('div');
                         adventureItem.classList.add('adventure-item');
 
-                        // Verifica el contenido de foto
-                        const imgElement = aventura.foto
-                            ? `<img src="data:image/jpeg;base64,${aventura.foto}" alt="Foto de la Aventura" class="card-img-top">`
+                        // Verificar si la imagen existe en el campo `fotoAvent`
+                        const imgElement = aventura.fotoAvent
+                            ? `<img src="data:image/jpeg;base64,${aventura.fotoAvent}" alt="Foto de la Aventura" class="card-img-top">`
                             : '<p>No hay imagen disponible</p>'; // Mensaje si no hay imagen
 
                         adventureItem.innerHTML = `
-                        <h3>${aventura.nombreAvent}</h3>
-                        <p><strong>Tipo:</strong> ${aventura.tipoAvent}</p>
-                        <p><strong>Zona:</strong> ${aventura.zonaAvent}</p>
-                        <p><strong>Horario:</strong> ${aventura.horarioAvent}</p>
-                        ${imgElement}
-                    `;
+                            <h3>${aventura.nombreAvent}</h3>
+                            <p><strong>Tipo:</strong> ${aventura.tipoAvent}</p>
+                            <p><strong>Zona:</strong> ${aventura.zonaAvent}</p>
+                            <p><strong>Horario:</strong> ${aventura.horarioAvent}</p>
+                            ${imgElement}
+                        `;
 
                         adventureList.appendChild(adventureItem);
                     });
@@ -141,5 +152,6 @@
             });
     }
 </script>
+
 </body>
 </html>

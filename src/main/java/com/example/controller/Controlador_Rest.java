@@ -43,4 +43,6 @@ public class Controlador_Rest
     public String crudTransporte(){ return "crudTransporte"; }
     @GetMapping("/inicioAdmin")
     public String inicioAdmin(){ return "inicioAdmin"; }
+    @GetMapping("/transportes")
+    public String transportes(){ return "transportes"; }
 }
