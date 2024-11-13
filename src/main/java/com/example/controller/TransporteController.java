@@ -64,7 +64,7 @@ public class TransporteController {
 
     // Actualizar un transporte existente (con posibilidad de actualizar la imagen)
     @PutMapping("/{nombreTransporte}")
-    public ResponseEntity<Transporte> updateTransporte(
+    public ResponseEntity<?> updateTransporte(
             @PathVariable String nombreTransporte,
             @RequestParam String tipoTransporte,
             @RequestParam String rutaTransporte,
@@ -74,22 +74,25 @@ public class TransporteController {
         Transporte transporte = transporteRepository.findById(nombreTransporte)
                 .orElseThrow(() -> new RuntimeException("Transporte no encontrado"));
 
+        // Actualizar los detalles del transporte
         transporte.setTipoTransporte(tipoTransporte);
         transporte.setRutaTransporte(rutaTransporte);
         transporte.setHorarioTransporte(horarioTransporte);
 
+        // Si se ha subido una nueva imagen, actualizarla
         if (imagenTransporte != null && !imagenTransporte.isEmpty()) {
             try {
                 byte[] imagenBytes = imagenTransporte.getBytes();
                 transporte.setFotoTransporte(imagenBytes);
             } catch (Exception e) {
-                return ResponseEntity.status(400).body(null);
+                return ResponseEntity.status(400).body(Map.of("error", "Error al actualizar la imagen del transporte"));
             }
         }
 
         Transporte updatedTransporte = transporteRepository.save(transporte);
         return ResponseEntity.ok(updatedTransporte);
     }
+
 
     // Eliminar un transporte
     @DeleteMapping("/{nombreTransporte}")

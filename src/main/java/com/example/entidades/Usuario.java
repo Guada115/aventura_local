@@ -8,23 +8,18 @@ import java.util.List;
 @Table(name = "usuarios")
 public class Usuario {
 
-    @Id // Esto indica que este campo es la clave primaria
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
     @Column(name = "IDENTIFICACION", nullable = false)
     private String identificacion;
-
 
     @Column(name = "NOMBRE", nullable = false)
     private String nombre;
 
-
     @Column(name = "APELLIDO", nullable = false)
     private String apellido;
 
-
     @Column(name = "CORREO", nullable = false, unique = true)
     private String correo;
-
 
     @Column(name = "FECHA_NACIMIENTO", nullable = false)
     @Temporal(TemporalType.DATE)
@@ -32,7 +27,6 @@ public class Usuario {
 
     @Column(name = "USUARIO", nullable = false, unique = true)
     private String usuario;
-
 
     @Column(name = "CONTRASENA", nullable = false)
     private String contrasena;
@@ -46,6 +40,18 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Restaurante> restaurantes;
 
+    public Usuario() {
+    }
+
+    public Usuario(String identificacion, String nombre, String apellido, String correo, Date fechaNacimiento, String usuario, String contrasena) {
+        this.identificacion = identificacion;
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.correo = correo;
+        this.fechaNacimiento = fechaNacimiento;
+        this.usuario = usuario;
+        this.contrasena = contrasena;
+    }
 
     // Getters y Setters
     public String getIdentificacion() {
@@ -127,5 +133,4 @@ public class Usuario {
     public void setRestaurantes(List<Restaurante> restaurantes) {
         this.restaurantes = restaurantes;
     }
-
 }

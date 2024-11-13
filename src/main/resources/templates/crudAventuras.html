@@ -71,6 +71,26 @@
     .btnNavegacion:hover {
       background-color: #e0e0e0;
     }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 500px;
+      width: 90%;
+    }
   </style>
 </head>
 <body>
@@ -94,15 +114,31 @@
   </form>
 </div>
 
+<div class="modal" id="edit-modal">
+  <div class="modal-content">
+    <h2>Editar Aventura</h2>
+    <form id="edit-aventura-form">
+      <input type="text" id="edit-tipoAvent" name="tipoAvent" class="cajaTexto" placeholder="Tipo de Aventura" required>
+      <input type="text" id="edit-zonaAvent" name="zonaAvent" class="cajaTexto" placeholder="Zona de Aventura" required>
+      <input type="text" id="edit-horarioAvent" name="horarioAvent" class="cajaTexto" placeholder="Horario de Aventura" required>
+      <input type="file" id="edit-fotoAvent" name="fotoAvent" class="cajaTexto" accept="image/*">
+      <button type="submit" class="btnGuardar">Actualizar</button>
+      <button type="button" onclick="cerrarModal()" class="btnNavegacion">Cancelar</button>
+    </form>
+  </div>
+</div>
+
 <div id="aventura-list" class="form-container">
   <h2 style="text-align: center; color: whitesmoke;">Lista de Aventuras</h2>
 </div>
 
 <script>
+  let aventuraSeleccionada = '';
+
   document.addEventListener('DOMContentLoaded', function() {
     obtenerAventuras();
 
-    document.getElementById('aventura-form').addEventListener('submit', function (e) {
+    document.getElementById('aventura-form').addEventListener('submit', function(e) {
       e.preventDefault();
       const formData = new FormData(this);
 
@@ -110,20 +146,18 @@
         method: 'POST',
         body: formData
       })
-              .then(response => {
-                if (!response.ok) {
-                  return response.json().then(data => {
-                    throw new Error(data.error || 'Verifica los datos ingresados.');
-                  });
-                }
-                return response.json();
-              })
+              .then(response => response.json())
               .then(data => {
                 console.log('Aventura agregada:', data);
                 this.reset();
                 obtenerAventuras();
               })
               .catch(error => alert('Error al agregar la aventura: ' + error.message));
+    });
+
+    document.getElementById('edit-aventura-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      actualizarAventura();
     });
   });
 
@@ -139,14 +173,14 @@
                   const newAventura = document.createElement('div');
                   newAventura.classList.add('aventura-item');
                   newAventura.innerHTML = `
-                            <h3>${aventura.nombreAvent}</h3>
-                            <p><strong>Tipo:</strong> ${aventura.tipoAvent}</p>
-                            <p><strong>Zona:</strong> ${aventura.zonaAvent}</p>
-                            <p><strong>Horario:</strong> ${aventura.horarioAvent}</p>
-                            ${aventura.fotoAvent ? `<img src="data:image/jpeg;base64,${aventura.fotoAvent}" alt="Foto de la Aventura" style="width: 100%; max-width: 300px; border-radius: 10px;">` : ''}
-                            <button class="btnEliminar" onclick="eliminarAventura('${aventura.nombreAvent}')">Eliminar</button>
-                            <button class="btnEditar" onclick="editarAventura('${aventura.nombreAvent}')">Editar</button>
-                        `;
+                                <h3>${aventura.nombreAvent}</h3>
+                                <p><strong>Tipo:</strong> ${aventura.tipoAvent}</p>
+                                <p><strong>Zona:</strong> ${aventura.zonaAvent}</p>
+                                <p><strong>Horario:</strong> ${aventura.horarioAvent}</p>
+                                ${aventura.fotoAvent ? `<img src="data:image/jpeg;base64,${aventura.fotoAvent}" alt="Foto de la Aventura">` : ''}
+                                <button class="btnEliminar" onclick="eliminarAventura('${aventura.nombreAvent}')">Eliminar</button>
+                                <button class="btnEditar" onclick="abrirModal('${aventura.nombreAvent}')">Editar</button>
+                            `;
                   aventuraList.appendChild(newAventura);
                 });
               } else {
@@ -157,19 +191,54 @@
   }
 
   function eliminarAventura(nombreAvent) {
-    if (confirm('¿Estás seguro de que deseas eliminar esta aventura?')) {
-      fetch(`/api/aventuras/${nombreAvent}`, {
-        method: 'DELETE'
-      })
-              .then(() => obtenerAventuras())
-              .catch(error => alert('Error al eliminar la aventura: ' + error.message));
-    }
+    fetch(`/api/aventuras/${nombreAvent}`, {
+      method: 'DELETE'
+    })
+            .then(response => {
+              if (response.ok) {
+                console.log('Aventura eliminada');
+                obtenerAventuras();
+              } else {
+                throw new Error('Error al eliminar la aventura');
+              }
+            })
+            .catch(error => alert('Error al eliminar la aventura: ' + error.message));
   }
 
-  function editarAventura(nombreAvent) {
-    alert('Funcionalidad de edición en desarrollo');
+
+  function abrirModal(nombreAvent) {
+    aventuraSeleccionada = nombreAvent;
+    fetch(`/api/aventuras/${nombreAvent}`)
+            .then(response => response.json())
+            .then(aventura => {
+              document.getElementById('edit-tipoAvent').value = aventura.tipoAvent;
+              document.getElementById('edit-zonaAvent').value = aventura.zonaAvent;
+              document.getElementById('edit-horarioAvent').value = aventura.horarioAvent;
+              document.getElementById('edit-fotoAvent').value = '';
+              document.getElementById('edit-modal').style.display = 'flex';
+            })
+            .catch(error => alert('Error al obtener los detalles de la aventura: ' + error.message));
+  }
+
+  function cerrarModal() {
+    document.getElementById('edit-modal').style.display = 'none';
+  }
+
+  function actualizarAventura() {
+    const formData = new FormData(document.getElementById('edit-aventura-form'));
+
+    fetch(`/api/aventuras/${aventuraSeleccionada}`, {
+      method: 'PUT',
+      body: formData
+    })
+            .then(response => response.json())
+            .then(data => {
+              console.log('Aventura actualizada:', data);
+              obtenerAventuras();
+              cerrarModal();
+            })
+            .catch(error => alert('Error al actualizar la aventura: ' + error.message));
   }
 </script>
-
 </body>
 </html>

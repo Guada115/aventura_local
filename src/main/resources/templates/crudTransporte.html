@@ -55,9 +55,49 @@
       border-radius: 10px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
+
+    /* Estilos para el modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgb(0,0,0);
+      background-color: rgba(0,0,0,0.4);
+      padding-top: 60px;
+    }
+
+    .modal-content {
+      background-color: rgb(24, 73, 95);
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 10px;
+    }
+
+    .close {
+      color: white;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: #ddd;
+      text-decoration: none;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
+
 <div class="form-container">
   <h1 style="text-align: center; color: whitesmoke;">Registrar Transporte</h1>
 
@@ -78,6 +118,22 @@
 </div>
 
 <div id="transporte-list"></div>
+
+<!-- El Modal para editar el transporte -->
+<div id="myModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="cerrarModal()">&times;</span>
+    <h2>Editar Transporte</h2>
+    <form id="edit-form">
+      <input type="text" id="editNombreTransporte" class="cajaTexto" placeholder="Nombre del Transporte" required>
+      <input type="text" id="editTipoTransporte" class="cajaTexto" placeholder="Tipo de Transporte" required>
+      <input type="text" id="editRutaTransporte" class="cajaTexto" placeholder="Ruta del Transporte" required>
+      <input type="text" id="editHorarioTransporte" class="cajaTexto" placeholder="Horario del Transporte" required>
+      <input type="file" id="editImagenTransporte" class="cajaTexto" accept="image/*">
+      <button type="submit" class="btnGuardar">Actualizar Transporte</button>
+    </form>
+  </div>
+</div>
 
 <script>
   document.getElementById('transporte-form').onsubmit = function(event) {
@@ -122,7 +178,7 @@
               <p><strong>Horario:</strong> ${transporte.horarioTransporte}</p>
               ${transporte.imagenTransporte ? `<img src="data:image/jpeg;base64,${transporte.imagenTransporte}" alt="Imagen de Transporte" style="max-width: 100%; height: auto; border-radius: 10px;">` : ''}
               <button class="btnEliminar" onclick="eliminarTransporte('${transporte.nombreTransporte}')">Eliminar</button>
-              <button class="btnEditar" onclick="editarTransporte('${transporte.nombreTransporte}')">Editar</button>
+              <button class="btnEditar" onclick="abrirModal('${transporte.nombreTransporte}')">Editar</button>
             `;
                   transporteList.appendChild(newTransporte);
                 });
@@ -147,8 +203,67 @@
             .catch(error => alert('Error: ' + error.message));
   }
 
-  // Cargar la lista de transportes al iniciar la página
+  function abrirModal(nombre) {
+    // Obtener los datos del transporte a editar
+    fetch(`/api/transportes/${nombre}`)
+            .then(response => response.json())
+            .then(transporte => {
+              // Rellenar el formulario de edición con los datos del transporte
+              document.getElementById('editNombreTransporte').value = transporte.nombreTransporte;
+              document.getElementById('editTipoTransporte').value = transporte.tipoTransporte;
+              document.getElementById('editRutaTransporte').value = transporte.rutaTransporte;
+              document.getElementById('editHorarioTransporte').value = transporte.horarioTransporte;
+
+              // Mostrar el modal
+              document.getElementById('myModal').style.display = "block";
+
+              // Configurar el formulario de edición
+              const form = document.getElementById('edit-form');
+              form.onsubmit = function(event) {
+                event.preventDefault();
+
+                const formData = new FormData();
+                formData.append('tipoTransporte', document.getElementById('editTipoTransporte').value);
+                formData.append('rutaTransporte', document.getElementById('editRutaTransporte').value);
+                formData.append('horarioTransporte', document.getElementById('editHorarioTransporte').value);
+
+                const imagen = document.getElementById('editImagenTransporte').files[0];
+                if (imagen) {
+                  formData.append('imagenTransporte', imagen);
+                }
+
+                fetch(`/api/transportes/${nombre}`, {
+                  method: 'PUT',
+                  body: formData
+                })
+                        .then(response => {
+                          if (!response.ok) {
+                            throw new Error('Error al actualizar el transporte');
+                          }
+                          return response.json();
+                        })
+                        .then(data => {
+                          alert('Transporte actualizado exitosamente');
+                          obtenerTransportes(); // Actualizar la lista de transportes
+                          cerrarModal(); // Cerrar el modal
+                        })
+                        .catch(error => {
+                          alert('Error: ' + error.message);
+                        });
+              };
+            })
+            .catch(error => {
+              alert('Error al obtener el transporte: ' + error.message);
+            });
+  }
+
+  function cerrarModal() {
+    document.getElementById('myModal').style.display = "none";
+  }
+
+  // Cargar la lista de transportes al cargar la página
   window.onload = obtenerTransportes;
 </script>
+
 </body>
 </html>

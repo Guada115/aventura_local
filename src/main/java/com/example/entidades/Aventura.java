@@ -7,15 +7,21 @@ import java.util.List;
 @Table(name = "aventuras")
 public class Aventura {
 
-    @Id // Esto indica que este campo es la clave primaria
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @Column(nullable = false)
     private String nombreAvent;
 
+    @Column(nullable = false)
     private String tipoAvent;
+
+    @Column(nullable = false)
     private String zonaAvent;
+
+    @Column(nullable = false)
     private String horarioAvent;
 
     @Lob
+    @Column(nullable = false)
     private byte[] fotoAvent;
 
     @ManyToOne

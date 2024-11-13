@@ -8,14 +8,21 @@ import java.util.List;
 @Table(name = "transporte")
 public class Transporte {
 
-    @Id // Esto indica que este campo es la clave primaria
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String nombreTransporte; // Campo que será la clave primaria
+    @Id
+    @Column(nullable = false)
+    private String nombreTransporte;
+
+    @Column(nullable = false)
     private String tipoTransporte;
+
+    @Column(nullable = false)
     private String rutaTransporte;
+
+    @Column(nullable = false)
     private String horarioTransporte;
 
     @Lob
+    @Column(nullable = false)
     private byte[] fotoTransporte;
 
     @ManyToMany
@@ -114,7 +121,6 @@ public class Transporte {
         this.aventuras = aventuras;
     }
 
-    // Método para convertir la imagen a Base64
     public String getImagenBase64() {
         return fotoTransporte != null ? Base64.getEncoder().encodeToString(this.fotoTransporte) : null;
     }
