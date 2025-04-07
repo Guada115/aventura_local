@@ -73,7 +73,7 @@
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid d-flex justify-content-between">
             <div class="d-flex flex-grow-1">
-                <a class="navbar-brand" href="/"><span>Aventura Local</span></a>
+                <a class="navbar-brand" href="#"><span>Aventura Local</span></a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -92,10 +92,23 @@
                     </ul>
                 </div>
             </div>
+
+            <!-- Sección de sesión -->
             <div class="d-flex align-items-center">
-                <a href="login" class="btn btn-outline-primary me-2" style="background-color: rgb(7, 58, 82);">Iniciar
-                    Sesión</a>
-                <a href="registrar" class="btn btn-primary" style="background-color: rgb(7, 58, 82);">Registrarse</a>
+                <!-- Si el usuario NO está logueado -->
+                <div th:if="${session.usuarioLogueado == null}">
+                    <a href="login" class="btn btn-outline-primary me-2" style="background-color: rgb(7, 58, 82);">Iniciar Sesión</a>
+                    <a href="registrar" class="btn btn-primary" style="background-color: rgb(7, 58, 82);">Registrarse</a>
+                </div>
+
+                <!-- Si el usuario SÍ está logueado -->
+                <div th:if="${session.usuarioLogueado != null}" class="d-flex align-items-center">
+                    <p class="mb-0 text-white me-3">
+                        Bienvenido, <span th:text="${session.usuarioLogueado.nombre}"></span>
+                    </p>
+                    <a href="/cerrar-sesion" class="btn btn-danger">Cerrar Sesión</a>
+                </div>
+
                 <img src="logo.png" alt="Logo" style="width: 140px; margin-left: 10px;">
             </div>
         </div>
@@ -113,6 +126,10 @@
         <p>&copy; 2024 Aventura Local - Todos los derechos reservados.</p>
     </div>
 </footer>
+
+<script th:inline="javascript">
+    const usuarioLogueado = [[${session.usuarioLogueado != null}]];
+</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -136,19 +153,24 @@
                         const restaurantItem = document.createElement('div');
                         restaurantItem.classList.add('restaurant-item');
 
-                        // Verifica el contenido de foto
                         const imgElement = restaurante.foto
                             ? `<img src="data:image/jpeg;base64,${restaurante.foto}" alt="Foto del Restaurante" class="card-img-top">`
-                            : '<p>No hay imagen disponible</p>'; // Mensaje si no hay imagen
+                            : '<p>No hay imagen disponible</p>';
 
-                        restaurantItem.innerHTML = `
-                        <h3>${restaurante.nombre}</h3>
-                        <p><strong>Horario:</strong> ${restaurante.horario}</p>
-                        <p><strong>Sector:</strong> ${restaurante.sector}</p>
-                        <p><strong>Tipo de Comida:</strong> ${restaurante.tipoComida}</p>
-                        ${imgElement}
-                    `;
+                        let contenido = `
+                            <h3>${restaurante.nombre}</h3>
+                            ${imgElement}
+                        `;
 
+                        if (usuarioLogueado) {
+                            contenido += `
+                                <p><strong>Horario:</strong> ${restaurante.horario}</p>
+                                <p><strong>Sector:</strong> ${restaurante.sector}</p>
+                                <p><strong>Tipo de Comida:</strong> ${restaurante.tipoComida}</p>
+                            `;
+                        }
+
+                        restaurantItem.innerHTML = contenido;
                         restaurantList.appendChild(restaurantItem);
                     });
                 } else {
@@ -160,5 +182,6 @@
             });
     }
 </script>
+
 </body>
 </html>

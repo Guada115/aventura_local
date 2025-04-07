@@ -14,4 +14,9 @@ public class UsuarioService {
     public boolean login(String usuarioNombre, String contrasena) {
         return usuarioRepository.findByUsuarioAndContrasena(usuarioNombre, contrasena).isPresent();
     }
+
+    public Usuario obtenerUsuarioPorCredenciales(String usuario, String contrasena) {
+        return usuarioRepository.findByUsuarioAndContrasena(usuario, contrasena).orElse(null);
+    }
+
 }
