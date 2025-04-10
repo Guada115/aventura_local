@@ -45,4 +45,6 @@ public class Controlador_Rest
     public String inicioAdmin(){ return "inicioAdmin"; }
     @GetMapping("/transportes")
     public String transportes(){ return "transportes"; }
+    @GetMapping("/favoritos")
+    public String favoritos(){ return "favoritos"; }
 }

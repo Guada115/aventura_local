@@ -40,6 +40,9 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Restaurante> restaurantes;
 
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Favorito> favoritos;
+
     public Usuario() {
     }
 
@@ -133,4 +136,14 @@ public class Usuario {
     public void setRestaurantes(List<Restaurante> restaurantes) {
         this.restaurantes = restaurantes;
     }
+
+    public List<Favorito> getFavoritos() {
+        return favoritos;
+    }
+
+    public void setFavoritos(List<Favorito> favoritos) {
+        this.favoritos = favoritos;
+    }
+
+
 }

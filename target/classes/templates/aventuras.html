@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="es"
-      xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Aventuras - Aventura Local</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -24,13 +23,12 @@
             font-family: fantasy;
         }
 
-        .adventure-item {
-            background-color: rgb(240, 240, 240);
-            margin: 10px 0;
-            padding: 10px;
+        .card-img-top {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            object-fit: cover;
             border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            text-align: center;
         }
 
         .container-fluid {
@@ -43,12 +41,18 @@
             color: whitesmoke;
         }
 
-        .card-img-top {
-            width: 100%;
-            max-width: 300px;
-            height: auto;
-            object-fit: cover;
+        .adventure-item {
+            background-color: rgb(240, 240, 240);
+            margin: 10px 0;
+            padding: 10px;
             border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            color: black;
         }
 
         footer {
@@ -66,7 +70,7 @@
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid d-flex justify-content-between">
             <div class="d-flex flex-grow-1">
-                <a class="navbar-brand" href="#"><span>Aventura Local</span></a>
+                <a class="navbar-brand" href="/"><span>Aventura Local</span></a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -74,10 +78,10 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="restaurantes"><span>Restaurantes</span></a>
+                            <a class="nav-link" href="restaurantes"><span>Restaurantes</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="aventuras"><span>Aventuras</span></a>
+                            <a class="nav-link active" aria-current="page" href="aventuras"><span>Aventuras</span></a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="transportes"><span>Transporte</span></a>
@@ -88,13 +92,11 @@
 
             <!-- Sección de sesión -->
             <div class="d-flex align-items-center">
-                <!-- Si el usuario NO está logueado -->
                 <div th:if="${session.usuarioLogueado == null}">
                     <a href="login" class="btn btn-outline-primary me-2" style="background-color: rgb(7, 58, 82);">Iniciar Sesión</a>
                     <a href="registrar" class="btn btn-primary" style="background-color: rgb(7, 58, 82);">Registrarse</a>
                 </div>
 
-                <!-- Si el usuario SÍ está logueado -->
                 <div th:if="${session.usuarioLogueado != null}" class="d-flex align-items-center">
                     <p class="mb-0 text-white me-3">
                         Bienvenido, <span th:text="${session.usuarioLogueado.nombre}"></span>
@@ -111,7 +113,7 @@
 <h2>Aventuras</h2>
 
 <div id="adventure-list" class="container mt-4">
-    <!-- Lista de aventuras se genera por JS -->
+    <!-- Lista de aventuras se cargará aquí -->
 </div>
 
 <footer class="footer mt-auto">
@@ -120,62 +122,74 @@
     </div>
 </footer>
 
-<!-- Incrustar el estado de sesión en JS -->
 <script th:inline="javascript">
-    const usuarioLogueado = [[${session.usuarioLogueado != null}]];
+    const usuarioLogueado = /*[[${session.usuarioLogueado != null}]]*/ false;
 </script>
 
-
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        obtenerAventuras();
-    });
-
-    function obtenerAventuras() {
-        fetch('/api/aventuras')
+    function agregarFavorito(tipo, idReferencia) {
+        fetch('/api/favoritos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ tipo: tipo, idReferencia: idReferencia })
+        })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                const adventureList = document.getElementById('adventure-list');
-                adventureList.innerHTML = ''; // Limpiar contenido anterior
-
-                if (Array.isArray(data) && data.length > 0) {
-                    data.forEach(aventura => {
-                        const adventureItem = document.createElement('div');
-                        adventureItem.classList.add('adventure-item');
-
-                        const imgElement = aventura.fotoAvent
-                            ? `<img src="data:image/jpeg;base64,${aventura.fotoAvent}" alt="Foto de la Aventura" class="card-img-top">`
-                            : '<p>No hay imagen disponible</p>';
-
-                        let contenido = `
-                            <h3>${aventura.nombreAvent}</h3>
-                            ${imgElement}
-                        `;
-
-                        if (usuarioLogueado) {
-                            contenido += `
-                                <p><strong>Tipo:</strong> ${aventura.tipoAvent}</p>
-                                <p><strong>Zona:</strong> ${aventura.zonaAvent}</p>
-                                <p><strong>Horario:</strong> ${aventura.horarioAvent}</p>
-                            `;
-                        }
-
-                        adventureItem.innerHTML = contenido;
-                        adventureList.appendChild(adventureItem);
-                    });
+                if (response.ok) {
+                    alert(`¡${tipo} "${idReferencia}" añadida a favoritos!`);
+                } else if (response.status === 401) {
+                    alert("Debes iniciar sesión para agregar a favoritos.");
                 } else {
-                    adventureList.innerHTML = '<p>No hay aventuras registradas.</p>';
+                    alert("Error al guardar favorito.");
                 }
             })
             .catch(error => {
-                console.error('Error al obtener la lista de aventuras:', error);
+                console.error("Error al enviar favorito:", error);
             });
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/api/aventuras')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('adventure-list');
+                container.innerHTML = '';
+
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(av => {
+                        const div = document.createElement('div');
+                        div.classList.add('adventure-item');
+
+                        const imgHtml = av.fotoAvent
+                            ? `<img src="data:image/jpeg;base64,${av.fotoAvent}" class="card-img-top mb-2">`
+                            : `<p>No hay imagen disponible</p>`;
+
+                        let html = `
+                            <h3>${av.nombreAvent}</h3>
+                            ${imgHtml}
+                        `;
+
+                        if (usuarioLogueado) {
+                            html += `
+                                <p><strong>Tipo:</strong> ${av.tipoAvent}</p>
+                                <p><strong>Zona:</strong> ${av.zonaAvent}</p>
+                                <p><strong>Horario:</strong> ${av.horarioAvent}</p>
+                                <button class="btn btn-warning mt-2" onclick="agregarFavorito('aventura', '${av.nombreAvent}')">⭐ Agregar a Favoritos</button>
+                            `;
+                        }
+
+                        div.innerHTML = html;
+                        container.appendChild(div);
+                    });
+                } else {
+                    container.innerHTML = '<p>No hay aventuras registradas.</p>';
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+            });
+    });
 </script>
 
 </body>
