@@ -52,39 +52,67 @@ public class FavoritoController {
                         .body("Debes iniciar sesión para agregar favoritos");
             }
 
-            if ("aventura".equalsIgnoreCase(favDTO.getTipo())) {
-                Aventura aventura = aventuraRepo.findByNombreAvent(favDTO.getIdReferencia());
+            Favorito favorito = new Favorito();
+            favorito.setUsuario(usuario);
 
-                if (aventura == null) {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                            .body("Aventura no encontrada: " + favDTO.getIdReferencia());
-                }
+            switch (favDTO.getTipo().toLowerCase()) {
+                case "aventura":
+                    Aventura aventura = aventuraRepo.findByNombreAvent(favDTO.getIdReferencia());
+                    if (aventura == null) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body("Aventura no encontrada: " + favDTO.getIdReferencia());
+                    }
+                    if (favoritoRepo.existsByTipoAndIdReferenciaAndUsuario("aventura", aventura.getNombreAvent(), usuario)) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body("Esta aventura ya está en tus favoritos");
+                    }
+                    favorito.setTipo("aventura");
+                    favorito.setNombre(aventura.getNombreAvent());
+                    favorito.setIdReferencia(aventura.getNombreAvent());
+                    favorito.setFoto(aventura.getFotoAvent());
+                    favorito.setZona(aventura.getZonaAvent());
+                    break;
 
-                // Verifica si ya existe
-                boolean existe = favoritoRepo.existsByTipoAndIdReferenciaAndUsuario(
-                        "aventura",
-                        aventura.getNombreAvent(),
-                        usuario
-                );
+                case "restaurante":
+                    Restaurante restaurante = restauranteRepo.findByNombre(favDTO.getIdReferencia());
+                    if (restaurante == null) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body("Restaurante no encontrado: " + favDTO.getIdReferencia());
+                    }
+                    if (favoritoRepo.existsByTipoAndIdReferenciaAndUsuario("restaurante", restaurante.getNombre(), usuario)) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body("Este restaurante ya está en tus favoritos");
+                    }
+                    favorito.setTipo("restaurante");
+                    favorito.setNombre(restaurante.getNombre());
+                    favorito.setIdReferencia(restaurante.getNombre());
+                    favorito.setFoto(restaurante.getFoto());
+                    favorito.setZona(restaurante.getSector());
+                    break;
 
-                if (existe) {
-                    return ResponseEntity.status(HttpStatus.CONFLICT)
-                            .body("Esta aventura ya está en tus favoritos");
-                }
+                case "transporte":
+                    Transporte transporte = transporteRepo.findByNombreTransporte(favDTO.getIdReferencia());
+                    if (transporte == null) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body("Transporte no encontrado: " + favDTO.getIdReferencia());
+                    }
+                    if (favoritoRepo.existsByTipoAndIdReferenciaAndUsuario("transporte", transporte.getNombreTransporte(), usuario)) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body("Este transporte ya está en tus favoritos");
+                    }
+                    favorito.setTipo("transporte");
+                    favorito.setNombre(transporte.getNombreTransporte());
+                    favorito.setIdReferencia(transporte.getNombreTransporte());
+                    favorito.setFoto(transporte.getFotoTransporte());
+                    favorito.setZona(transporte.getRutaTransporte());
+                    break;
 
-                Favorito favorito = new Favorito();
-                favorito.setTipo("aventura");
-                favorito.setNombre(aventura.getNombreAvent());
-                favorito.setIdReferencia(aventura.getNombreAvent()); // ESTO ES CRUCIAL
-                favorito.setFoto(aventura.getFotoAvent());
-                favorito.setZona(aventura.getZonaAvent());
-                favorito.setUsuario(usuario);
-
-                favoritoRepo.save(favorito);
-                return ResponseEntity.ok("Aventura agregada a favoritos correctamente");
+                default:
+                    return ResponseEntity.badRequest().body("Tipo de favorito no soportado: " + favDTO.getTipo());
             }
 
-            return ResponseEntity.badRequest().body("Tipo de favorito no soportado: " + favDTO.getTipo());
+            favoritoRepo.save(favorito);
+            return ResponseEntity.ok(favorito.getTipo() + " agregado a favoritos correctamente");
         } catch (Exception e) {
             log.error("Error al guardar favorito", e);
             return ResponseEntity.internalServerError()

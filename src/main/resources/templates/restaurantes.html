@@ -65,6 +65,20 @@
             width: 100%;
             margin-top: auto;
         }
+
+        .btn-warning {
+            background-color: #ffc107;
+            color: black;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
     </style>
 </head>
 
@@ -181,6 +195,80 @@
                 console.error('Error al obtener la lista de restaurantes:', error);
             });
     }
+
+    function agregarFavorito(tipo, idReferencia) {
+        fetch('/favoritos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ tipo: tipo, idReferencia: idReferencia })
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.text().then(msg => alert(msg));
+                } else if (response.status === 401) {
+                    alert("Debes iniciar sesión para agregar a favoritos.");
+                } else if (response.status === 409) {
+                    return response.text().then(msg => alert(msg));
+                } else {
+                    return response.text().then(msg => alert(`Error: ${msg}`));
+                }
+            })
+            .catch(error => {
+                console.error("Error al enviar favorito:", error);
+                alert("Error de conexión. Intenta nuevamente.");
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/restaurantes')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const restaurantList = document.getElementById('restaurant-list');
+                restaurantList.innerHTML = '';
+
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(restaurante => {
+                        const restaurantItem = document.createElement('div');
+                        restaurantItem.classList.add('restaurant-item');
+
+                        const imgElement = restaurante.foto
+                            ? `<img src="data:image/jpeg;base64,${restaurante.foto}" alt="Foto del Restaurante" class="card-img-top">`
+                            : '<p>No hay imagen disponible</p>';
+
+                        let contenido = `
+                            <h3>${restaurante.nombre}</h3>
+                            ${imgElement}
+                        `;
+
+                        if (usuarioLogueado) {
+                            contenido += `
+                                <p><strong>Horario:</strong> ${restaurante.horario}</p>
+                                <p><strong>Sector:</strong> ${restaurante.sector}</p>
+                                <p><strong>Tipo de Comida:</strong> ${restaurante.tipoComida}</p>
+                                <button class="btn btn-warning mt-2" onclick="agregarFavorito('restaurante', '${restaurante.nombre}')">
+                                    ⭐ Agregar a Favoritos
+                                </button>
+                            `;
+                        }
+
+                        restaurantItem.innerHTML = contenido;
+                        restaurantList.appendChild(restaurantItem);
+                    });
+                } else {
+                    restaurantList.innerHTML = '<p>No hay restaurantes registrados.</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error al obtener la lista de restaurantes:', error);
+            });
+    });
 </script>
 
 </body>

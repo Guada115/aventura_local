@@ -57,6 +57,20 @@
       width: 100%;
       margin-top: auto;
     }
+
+    .btn-warning {
+      background-color: #ffc107;
+      color: black;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .btn-warning:hover {
+      background-color: #e0a800;
+    }
   </style>
 </head>
 
@@ -112,6 +126,8 @@
   <!-- Lista de transportes se cargará aquí -->
 </div>
 
+
+
 <footer class="footer mt-auto">
   <div class="container">
     <p>&copy; 2024 Aventura Local - Todos los derechos reservados.</p>
@@ -123,7 +139,7 @@
 </script>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     obtenerTransportes();
   });
 
@@ -172,6 +188,82 @@
               console.error('Error al obtener la lista de transportes:', error);
             });
   }
+
+
+    function agregarFavorito(tipo, idReferencia) {
+    fetch('/favoritos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({tipo: tipo, idReferencia: idReferencia})
+    })
+            .then(response => {
+              if (response.ok) {
+                return response.text().then(msg => alert(msg));
+              } else if (response.status === 401) {
+                alert("Debes iniciar sesión para agregar a favoritos.");
+              } else if (response.status === 409) {
+                return response.text().then(msg => alert(msg));
+              } else {
+                return response.text().then(msg => alert(`Error: ${msg}`));
+              }
+            })
+            .catch(error => {
+              console.error("Error al enviar favorito:", error);
+              alert("Error de conexión. Intenta nuevamente.");
+            });
+  }
+
+    document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/transportes')
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+              return response.json();
+            })
+            .then(data => {
+              const transportList = document.getElementById('transport-list');
+              transportList.innerHTML = '';
+
+              if (Array.isArray(data) && data.length > 0) {
+                data.forEach(transporte => {
+                  const transportItem = document.createElement('div');
+                  transportItem.classList.add('transport-item');
+
+                  const imgElement = transporte.imagenTransporte
+                          ? `<img src="data:image/jpeg;base64,${transporte.imagenTransporte}" alt="Foto del Transporte" class="card-img-top">`
+                          : '<p>No hay imagen disponible</p>';
+
+                  let contenido = `
+                            <h3>${transporte.nombreTransporte}</h3>
+                            ${imgElement}
+                        `;
+
+                  if (usuarioLogueado) {
+                    contenido += `
+                                <p><strong>Tipo:</strong> ${transporte.tipoTransporte}</p>
+                                <p><strong>Ruta:</strong> ${transporte.rutaTransporte}</p>
+                                <p><strong>Horario:</strong> ${transporte.horarioTransporte}</p>
+                                <button class="btn btn-warning mt-2" onclick="agregarFavorito('transporte', '${transporte.nombreTransporte}')">
+                                    ⭐ Agregar a Favoritos
+                                </button>
+                            `;
+                  }
+
+                  transportItem.innerHTML = contenido;
+                  transportList.appendChild(transportItem);
+                });
+              } else {
+                transportList.innerHTML = '<p>No hay transportes registrados.</p>';
+              }
+            })
+            .catch(error => {
+              console.error('Error al obtener la lista de transportes:', error);
+            });
+  });
+
 </script>
 
 </body>

@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TransporteRepository extends JpaRepository<Transporte, String> {
+    Transporte findByNombreTransporte(String idReferencia);
 }
