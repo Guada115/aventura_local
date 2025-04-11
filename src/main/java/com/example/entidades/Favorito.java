@@ -11,6 +11,8 @@ public class Favorito {
     private Long id;
 
     private String tipo; // aventura, restaurante, transporte
+
+    @Column(name = "REFERENCIA_ID", nullable = false)
     private String idReferencia; // nombreAvent, nombreRestaurante, etc.
     private String nombre;
     @Lob

@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -20,7 +21,7 @@ import java.util.Map;
 
 @Slf4j
 @Controller
-@RequestMapping("/api/favoritos")
+@RequestMapping("/favoritos")
 public class FavoritoController {
 
     @Autowired
@@ -44,41 +45,57 @@ public class FavoritoController {
     // Endpoint para agregar favorito
     @PostMapping
     public ResponseEntity<?> agregarFavorito(@RequestBody FavoritoDTO favDTO, HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
-
-        if (usuario == null) {
-            return ResponseEntity.status(401).body("No autenticado");
-        }
-
-        if ("aventura".equals(favDTO.getTipo())) {
-            Aventura aventura = aventuraRepo.findById(favDTO.getIdReferencia()).orElse(null);
-            if (aventura == null) {
-                return ResponseEntity.notFound().build();
+        try {
+            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            if (usuario == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Debes iniciar sesión para agregar favoritos");
             }
 
-            Favorito favorito = new Favorito(
-                    "aventura",
-                    aventura.getNombreAvent(),
-                    aventura.getNombreAvent(),
-                    aventura.getFotoAvent(),
-                    aventura.getZonaAvent(),
-                    usuario
-            );
+            if ("aventura".equalsIgnoreCase(favDTO.getTipo())) {
+                Aventura aventura = aventuraRepo.findByNombreAvent(favDTO.getIdReferencia());
 
-            favoritoRepo.save(favorito);
-            return ResponseEntity.ok("Aventura agregada a favoritos");
+                if (aventura == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body("Aventura no encontrada: " + favDTO.getIdReferencia());
+                }
+
+                // Verifica si ya existe
+                boolean existe = favoritoRepo.existsByTipoAndIdReferenciaAndUsuario(
+                        "aventura",
+                        aventura.getNombreAvent(),
+                        usuario
+                );
+
+                if (existe) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT)
+                            .body("Esta aventura ya está en tus favoritos");
+                }
+
+                Favorito favorito = new Favorito();
+                favorito.setTipo("aventura");
+                favorito.setNombre(aventura.getNombreAvent());
+                favorito.setIdReferencia(aventura.getNombreAvent()); // ESTO ES CRUCIAL
+                favorito.setFoto(aventura.getFotoAvent());
+                favorito.setZona(aventura.getZonaAvent());
+                favorito.setUsuario(usuario);
+
+                favoritoRepo.save(favorito);
+                return ResponseEntity.ok("Aventura agregada a favoritos correctamente");
+            }
+
+            return ResponseEntity.badRequest().body("Tipo de favorito no soportado: " + favDTO.getTipo());
+        } catch (Exception e) {
+            log.error("Error al guardar favorito", e);
+            return ResponseEntity.internalServerError()
+                    .body("Error interno al procesar la solicitud: " + e.getMessage());
         }
-
-        return ResponseEntity.badRequest().body("Tipo no soportado");
     }
 
     // Mostrar la vista con la lista de favoritos
-    @GetMapping("/favoritos")
+    @GetMapping
     public String mostrarFavoritos(HttpSession session, Model model) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
-
-        // Debug
-        System.out.println("Usuario en sesión: " + (usuario != null ? usuario.getIdentificacion() : "null"));
 
         if (usuario == null) {
             return "redirect:/login";
@@ -86,14 +103,12 @@ public class FavoritoController {
 
         List<Favorito> favoritos = favoritoService.obtenerFavoritosPorUsuario(usuario.getIdentificacion());
 
-        // Debug importante
-        System.out.println("Número de favoritos: " + favoritos.size());
-        favoritos.forEach(f -> System.out.println(f.getNombre() + " - " + f.getTipo()));
-
+        // Corrección aquí - asegurar que el nombre coincida con el usado en Thymeleaf
         model.addAttribute("favoritos", favoritos);
+        model.addAttribute("usuario", usuario);
+
         return "favoritos";
     }
-
 
     // Endpoint para devolver la imagen por ID de favorito
     @GetMapping("/imagen/{id}")
@@ -119,4 +134,5 @@ public class FavoritoController {
         public String getIdReferencia() { return idReferencia; }
         public void setIdReferencia(String idReferencia) { this.idReferencia = idReferencia; }
     }
+
 }

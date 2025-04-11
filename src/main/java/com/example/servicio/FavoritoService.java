@@ -14,9 +14,8 @@ public class FavoritoService {
     private FavoritoRepository favoritoRepo;
 
     public List<Favorito> obtenerFavoritosPorUsuario(String identificacion) {
-        System.out.println("Buscando favoritos para: " + identificacion);
+
         List<Favorito> favoritos = favoritoRepo.findByUsuarioIdentificacion(identificacion);
-        System.out.println("Favoritos encontrados: " + favoritos.size());
         return favoritos;
     }
 

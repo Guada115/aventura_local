@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AventuraRepository extends JpaRepository<Aventura, String> {
+    Aventura findByNombreAvent(String nombreAvent);
 }

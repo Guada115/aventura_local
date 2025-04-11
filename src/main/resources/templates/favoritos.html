@@ -99,6 +99,17 @@
         .social-link a:hover {
             color: #007bff;
         }
+
+        .card {
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .card-img-top {
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 
@@ -124,7 +135,7 @@
                             <a class="nav-link" href="/transportes"><span>Transporte</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/api/favoritos/favoritos"><span>Favoritos</span></a>
+                            <a class="nav-link" href="/favoritos"><span>Favoritos</span></a>
                         </li>
                     </ul>
                 </div>
@@ -148,25 +159,37 @@
 <div class="container mt-4">
     <h2 class="text-white">Mis Favoritos</h2>
 
-    <!-- Debug de sesión -->
-    <div th:if="${session.usuarioLogueado}">
-        <p>Usuario logueado: <span th:text="${session.usuarioLogueado.identificacion}"></span></p>
+    <!-- Información del usuario con verificación -->
+    <div class="alert alert-info" th:if="${usuario != null}">
+        <h4>Usuario: <span th:text="${usuario.nombre}"></span></h4>
+        <p>ID: <span th:text="${usuario.identificacion}"></span></p>
     </div>
 
-    <!-- Lista simplificada de favoritos -->
-    <div th:if="${favoritos != null and !favoritos.empty}">
-        <h2>Mis Favoritos</h2>
-        <div th:each="favorito : ${favoritos}">
-            <p th:text="${favorito.nombre}"></p>
+    <!-- Lista de favoritos con verificación mejorada -->
+    <div class="row" th:if="${favoritos != null and not favoritos.empty}">
+        <div class="col-md-4 mb-4" th:each="favorito : ${favoritos}">
+            <div class="card h-100">
+                <!-- Imagen corregida -->
+                <img th:src="${favorito.foto != null ? '/favoritos/imagen/' + favorito.id : '/img/default.jpg'}"
+                     class="card-img-top"
+                     alt="Imagen favorito"
+                     style="height: 200px; object-fit: cover;">
+
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${favorito.nombre}"></h5>
+                    <p class="card-text">
+                        <strong>Tipo:</strong> <span th:text="${favorito.tipo}"></span><br>
+                        <strong>Zona:</strong> <span th:text="${favorito.zona}"></span>
+                    </p>
+                </div>
+
+            </div>
         </div>
     </div>
 
-    <!-- Mensajes de estado -->
-    <div th:if="${favoritos == null}" class="alert alert-danger">
-        No se recibieron datos del servidor
-    </div>
-    <div th:if="${favoritos != null and favoritos.empty}" class="alert alert-info">
-        No tienes favoritos guardados
+    <!-- Mensaje mejorado para cuando no hay favoritos -->
+    <div th:if="${favoritos == null or favoritos.empty}" class="alert alert-warning">
+        No tienes favoritos guardados aún.
     </div>
 </div>
 
