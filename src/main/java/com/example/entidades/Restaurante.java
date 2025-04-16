@@ -21,7 +21,7 @@ public class Restaurante {
     private String tipoComida;
 
     @Lob
-    @Column(nullable = false)
+    @Column(name = "foto", columnDefinition = "LONGBLOB", nullable = false)
     private byte[] foto;
 
     @ManyToOne

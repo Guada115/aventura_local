@@ -21,7 +21,7 @@ public class Aventura {
     private String horarioAvent;
 
     @Lob
-    @Column(nullable = false)
+    @Column(name= "foto_avent",columnDefinition = "LONGBLOB", nullable = false)
     private byte[] fotoAvent;
 
     @ManyToOne

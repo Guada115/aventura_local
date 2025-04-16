@@ -16,6 +16,7 @@ public class Favorito {
     private String idReferencia; // nombreAvent, nombreRestaurante, etc.
     private String nombre;
     @Lob
+    @Column( name= "foto_favorito",columnDefinition = "LONGBLOB", nullable = false)
     private byte[] foto;
 
     private String zona;

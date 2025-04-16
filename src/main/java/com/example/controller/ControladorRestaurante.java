@@ -8,8 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/restaurantes")
@@ -18,11 +17,26 @@ public class ControladorRestaurante {
     @Autowired
     private RestauranteRepository restauranteRepository;
 
+
     // Obtener todos los restaurantes
     @GetMapping
-    public List<Restaurante> getAllRestaurantes() {
-        return restauranteRepository.findAll();
+    public List<Map<String, Object>> getAllRestaurantes() {
+        List<Restaurante> restaurantes = restauranteRepository.findAll();
+        List<Map<String, Object>> response = new ArrayList<>();
+
+        for (Restaurante restaurante : restaurantes) {
+            Map<String, Object> data = new HashMap<>();
+            data.put("nombre", restaurante.getNombre());
+            data.put("horario", restaurante.getHorario());
+            data.put("sector", restaurante.getSector());
+            data.put("tipoComida", restaurante.getTipoComida());
+            data.put("foto", Base64.getEncoder().encodeToString(restaurante.getFoto()));
+            response.add(data);
+        }
+
+        return response;
     }
+
 
     // Obtener un restaurante por su nombre (identificador)
     @GetMapping("/{nombre}")
@@ -32,7 +46,7 @@ public class ControladorRestaurante {
         return ResponseEntity.ok(restaurante);
     }
 
-    // Crear un nuevo restaurante
+    //Crear restaurante
     @PostMapping
     public ResponseEntity<?> createRestaurante(
             @RequestParam String nombre,
@@ -41,6 +55,7 @@ public class ControladorRestaurante {
             @RequestParam String tipoComida,
             @RequestParam("foto") MultipartFile foto) {
         try {
+            // Convertir la imagen a un arreglo de bytes
             Restaurante restaurante = new Restaurante(nombre, horario, sector, tipoComida, foto.getBytes());
             Restaurante savedRestaurante = restauranteRepository.save(restaurante);
             return ResponseEntity.ok(savedRestaurante);
@@ -50,6 +65,7 @@ public class ControladorRestaurante {
             return ResponseEntity.status(400).body(Map.of("error", "Error al guardar el restaurante: " + e.getMessage()));
         }
     }
+
 
     // Actualizar un restaurante existente
     @PutMapping("/{nombre}")

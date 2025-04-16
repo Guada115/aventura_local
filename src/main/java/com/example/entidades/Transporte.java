@@ -22,7 +22,7 @@ public class Transporte {
     private String horarioTransporte;
 
     @Lob
-    @Column(nullable = false)
+    @Column(name= "foto_transporte",columnDefinition = "LONGBLOB", nullable = false)
     private byte[] fotoTransporte;
 
     @ManyToMany
