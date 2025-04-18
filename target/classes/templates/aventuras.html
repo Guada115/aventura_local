@@ -70,10 +70,24 @@
             border-radius: 8px;
             margin-top: 10px;
         }
+        .comentarios-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            border: 1px solid #eee;
+            padding: 10px;
+            border-radius: 5px;
+        }
 
         .comentarios-list p {
-            margin-bottom: 5px;
-            text-align: left;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .comentarios-list p:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
         }
     </style>
 </head>
@@ -183,11 +197,13 @@
         })
             .then(response => {
                 if (response.ok) {
-                    cargarComentarios(nombreAventura);
-                    textarea.value = '';
-                } else {
-                    response.text().then(msg => alert("Error: " + msg));
+                    // Cambio clave: Forzar recarga completa de comentarios
+                    return cargarComentarios(nombreAventura, false, true); // Nuevo parámetro
                 }
+                throw new Error('Error en la respuesta');
+            })
+            .then(() => {
+                textarea.value = '';
             })
             .catch(err => {
                 console.error('Error:', err);
@@ -198,7 +214,7 @@
     }
 
     // Función para cargar comentarios
-    function cargarComentarios(nombreAventura) {
+    function cargarComentarios(nombreAventura, mostrarTodos = false, esNuevoComentario = false) {
         fetch(`/comentarios/${nombreAventura}`)
             .then(response => {
                 if (!response.ok) throw new Error("Error al cargar comentarios");
@@ -206,18 +222,35 @@
             })
             .then(comentarios => {
                 const contenedor = document.getElementById(`comentarios-${nombreAventura}`);
-                if (comentarios.length > 0) {
-                    contenedor.innerHTML = comentarios.map(c =>
-                        `<p><strong>${c.usuario.nombre}:</strong> ${c.contenido}</p>`
-                    ).join('');
+                const btnVerTodos = document.getElementById(`btn-ver-todos-${nombreAventura}`);
+
+                // Ordenar por fecha descendente
+                comentarios.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+                // Mostrar comentarios
+                const comentariosAMostrar = mostrarTodos ? comentarios : comentarios.slice(0, 3);
+                contenedor.innerHTML = comentariosAMostrar.map(c => `
+                <p><strong>${c.usuario.nombre}:</strong> ${c.contenido}
+                <small class="text-muted">(${new Date(c.fecha).toLocaleString()})</small></p>
+            `).join('');
+
+                // Lógica mejorada para el botón
+                if (comentarios.length > 3) {
+                    btnVerTodos.style.display = 'block';
+                    btnVerTodos.onclick = () => cargarComentarios(nombreAventura, true);
+
+                    // Mostrar automáticamente todos si es nuevo comentario
+                    if (esNuevoComentario && !mostrarTodos && comentarios.length === 4) {
+                        cargarComentarios(nombreAventura, true);
+                    }
                 } else {
-                    contenedor.innerHTML = '<p>No hay comentarios aún.</p>';
+                    btnVerTodos.style.display = 'none';
                 }
             })
             .catch(err => {
                 console.error('Error:', err);
                 document.getElementById(`comentarios-${nombreAventura}`).innerHTML =
-                    '<p>Error al cargar comentarios.</p>';
+                    '<p>Error al cargar comentarios</p>';
             });
     }
 
@@ -246,22 +279,29 @@
                             ` : ''}
 
                             <div class="comment-section mt-3">
-                                <h5>Comentarios</h5>
-                                <div id="comentarios-${av.nombreAvent}" class="comentarios-list mb-2">
-                                    <p>Cargando comentarios...</p>
-                                </div>
+    <h5>Comentarios</h5>
+    <div id="comentarios-${av.nombreAvent}" class="comentarios-list mb-2">
+        <p>Cargando comentarios...</p>
+    </div>
 
-                                ${usuarioLogueado ? `
-                                    <form onsubmit="return enviarComentario('${av.nombreAvent}')">
-                                        <textarea id="comentario-input-${av.nombreAvent}"
-                                                  class="form-control"
-                                                  rows="2"
-                                                  placeholder="Escribe tu comentario..."
-                                                  required></textarea>
-                                        <button type="submit" class="btn btn-primary btn-sm mt-2">Comentar</button>
-                                    </form>
-                                ` : '<p class="text-muted">Inicia sesión para comentar.</p>'}
-                            </div>
+    <!-- Botón "Ver todos" - IMPORTANTE: debe tener el ID correcto -->
+    <button id="btn-ver-todos-${av.nombreAvent}"
+            class="btn btn-link btn-sm p-0 mb-2"
+            style="display: none;">
+        Ver todos los comentarios
+    </button>
+
+    ${usuarioLogueado ? `
+    <form onsubmit="return enviarComentario('${av.nombreAvent}')">
+        <textarea id="comentario-input-${av.nombreAvent}"
+                 class="form-control"
+                 rows="2"
+                 placeholder="Escribe tu comentario..."
+                 required></textarea>
+        <button type="submit" class="btn btn-primary btn-sm mt-2">Comentar</button>
+    </form>
+    ` : '<p class="text-muted">Inicia sesión para comentar.</p>'}
+</div>
                         `;
                     container.appendChild(div);
                     cargarComentarios(av.nombreAvent);
