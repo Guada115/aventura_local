@@ -62,6 +62,19 @@
             width: 100%;
             margin-top: auto;
         }
+
+        .comment-section {
+            background-color: #ffffff;
+            border-top: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .comentarios-list p {
+            margin-bottom: 5px;
+            text-align: left;
+        }
     </style>
 </head>
 
@@ -90,7 +103,6 @@
                 </div>
             </div>
 
-            <!-- Sección de sesión -->
             <div class="d-flex align-items-center">
                 <div th:if="${session.usuarioLogueado == null}">
                     <a href="login" class="btn btn-outline-primary me-2" style="background-color: rgb(7, 58, 82);">Iniciar Sesión</a>
@@ -152,6 +164,54 @@
             });
     }
 
+    function cargarComentarios(aventuraId) {
+        fetch(`/api/comentarios/aventura/${aventuraId}`)
+            .then(response => response.json())
+            .then(comentarios => {
+                const contenedor = document.getElementById(`comentarios-${aventuraId}`);
+                if (comentarios.length > 0) {
+                    contenedor.innerHTML = '';
+                    comentarios.forEach(c => {
+                        const p = document.createElement('p');
+                        p.innerHTML = `<strong>${c.usuario}:</strong> ${c.texto}`;
+                        contenedor.appendChild(p);
+                    });
+                } else {
+                    contenedor.innerHTML = '<p>No hay comentarios aún.</p>';
+                }
+            })
+            .catch(err => {
+                console.error('Error cargando comentarios:', err);
+            });
+    }
+
+    function enviarComentario(aventuraId) {
+        const textarea = document.getElementById(`comentario-input-${aventuraId}`);
+        const texto = textarea.value.trim();
+        if (texto === '') return false;
+
+        fetch(`/api/comentarios`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ aventuraId: aventuraId, texto: texto })
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.text().then(msg => alert(msg));
+                } else if (response.status === 401) {
+                    alert("Debes iniciar sesión para agregar a favoritos.");
+                } else if (response.status === 409) {
+                    return response.text().then(msg => alert(msg));
+                } else {
+                    return response.text().then(msg => alert(`Error: ${msg}`));
+                }
+            });
+
+        return false;
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         fetch('/api/aventuras')
             .then(response => response.json())
@@ -182,8 +242,27 @@
                             `;
                         }
 
+                        html += `
+                            <div class="comment-section mt-3">
+                                <h5>Comentarios</h5>
+                                <div id="comentarios-${av.id}" class="comentarios-list mb-2">
+                                    <p>Cargando comentarios...</p>
+                                </div>
+                                ${usuarioLogueado ? `
+                                <form onsubmit="return enviarComentario('${av.id}')">
+                                    <div class="mb-2">
+                                        <textarea id="comentario-input-${av.id}" class="form-control" rows="2" placeholder="Escribe tu comentario..." required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-sm">Comentar</button>
+                                </form>
+                                ` : `<p class="text-muted">Inicia sesión para comentar.</p>`}
+                            </div>
+                        `;
+
                         div.innerHTML = html;
                         container.appendChild(div);
+
+                        cargarComentarios(av.id);
                     });
                 } else {
                     container.innerHTML = '<p>No hay aventuras registradas.</p>';
@@ -192,6 +271,7 @@
             .catch(err => {
                 console.error('Error:', err);
             });
+
     });
 </script>
 
