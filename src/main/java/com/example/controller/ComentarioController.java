@@ -7,14 +7,15 @@ import com.example.repository.AventuraRepository;
 import com.example.repository.ComentarioRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import com.example.dto.ComentarioDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/comentarios")
+@Controller
+@RequestMapping("/comentarios")
 public class ComentarioController {
 
     @Autowired
@@ -23,30 +24,42 @@ public class ComentarioController {
     @Autowired
     private AventuraRepository aventuraRepository;
 
-    @PostMapping
-    public Comentario agregarComentario(@RequestBody ComentarioDTO comentarioDTO, HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
-        Aventura aventura = aventuraRepository.findById(comentarioDTO.getNombreAventura()).orElse(null);
+    @PostMapping("/guardar")
+    public ResponseEntity<String> guardarComentario(
+            @RequestParam String texto,
+            @RequestParam String nombreAventura,
+            HttpSession session) {
 
-        if (usuario == null || aventura == null || comentarioDTO.getTexto().isBlank()) {
-            throw new IllegalArgumentException("Datos inválidos");
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null) {
+            return ResponseEntity.status(401).body("Error: Usuario no logueado");
+        }
+
+        Aventura aventura = aventuraRepository.findById(nombreAventura).orElse(null);
+        if (aventura == null) {
+            return ResponseEntity.badRequest().body("Error: Aventura no encontrada");
+        }
+
+        if (texto == null || texto.isBlank()) {
+            return ResponseEntity.badRequest().body("Error: Texto del comentario vacío");
         }
 
         Comentario comentario = new Comentario();
-        comentario.setContenido(comentarioDTO.getTexto());
+        comentario.setContenido(texto);
         comentario.setFecha(LocalDateTime.now());
         comentario.setUsuario(usuario);
         comentario.setAventura(aventura);
 
-        return comentarioRepository.save(comentario);
+        comentarioRepository.save(comentario);
+        return ResponseEntity.ok("Comentario guardado");
     }
 
-
     @GetMapping("/{nombreAventura}")
-    public List<Comentario> obtenerComentarios(@PathVariable String nombreAventura) {
+    public ResponseEntity<List<Comentario>> obtenerComentarios(@PathVariable String nombreAventura) {
         Aventura aventura = aventuraRepository.findById(nombreAventura).orElse(null);
-        return aventura != null
-                ? comentarioRepository.findByAventuraOrderByFechaDesc(aventura)
-                : List.of();
+        if (aventura == null) {
+            return ResponseEntity.ok(List.of());
+        }
+        return ResponseEntity.ok(comentarioRepository.findByAventuraOrderByFechaDesc(aventura));
     }
 }

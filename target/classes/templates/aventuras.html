@@ -164,53 +164,63 @@
             });
     }
 
-    function cargarComentarios(aventuraId) {
-        fetch(`/api/comentarios/aventura/${aventuraId}`)
-            .then(response => response.json())
+    // Función para enviar comentarios
+    function enviarComentario(nombreAventura) {
+        const textarea = document.getElementById(`comentario-input-${nombreAventura}`);
+        const texto = textarea.value.trim();
+
+        if (!texto) {
+            alert("¡El comentario no puede estar vacío!");
+            return false;
+        }
+
+        fetch(`/comentarios/guardar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `texto=${encodeURIComponent(texto)}&nombreAventura=${encodeURIComponent(nombreAventura)}`
+        })
+            .then(response => {
+                if (response.ok) {
+                    cargarComentarios(nombreAventura);
+                    textarea.value = '';
+                } else {
+                    response.text().then(msg => alert("Error: " + msg));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert("Error al enviar el comentario");
+            });
+
+        return false;
+    }
+
+    // Función para cargar comentarios
+    function cargarComentarios(nombreAventura) {
+        fetch(`/comentarios/${nombreAventura}`)
+            .then(response => {
+                if (!response.ok) throw new Error("Error al cargar comentarios");
+                return response.json();
+            })
             .then(comentarios => {
-                const contenedor = document.getElementById(`comentarios-${aventuraId}`);
+                const contenedor = document.getElementById(`comentarios-${nombreAventura}`);
                 if (comentarios.length > 0) {
-                    contenedor.innerHTML = '';
-                    comentarios.forEach(c => {
-                        const p = document.createElement('p');
-                        p.innerHTML = `<strong>${c.usuario}:</strong> ${c.texto}`;
-                        contenedor.appendChild(p);
-                    });
+                    contenedor.innerHTML = comentarios.map(c =>
+                        `<p><strong>${c.usuario.nombre}:</strong> ${c.contenido}</p>`
+                    ).join('');
                 } else {
                     contenedor.innerHTML = '<p>No hay comentarios aún.</p>';
                 }
             })
             .catch(err => {
-                console.error('Error cargando comentarios:', err);
+                console.error('Error:', err);
+                document.getElementById(`comentarios-${nombreAventura}`).innerHTML =
+                    '<p>Error al cargar comentarios.</p>';
             });
     }
 
-    function enviarComentario(aventuraId) {
-        const textarea = document.getElementById(`comentario-input-${aventuraId}`);
-        const texto = textarea.value.trim();
-        if (texto === '') return false;
-
-        fetch(`/api/comentarios`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ aventuraId: aventuraId, texto: texto })
-        })
-            .then(response => {
-                if (response.ok) {
-                    return response.text().then(msg => alert(msg));
-                } else if (response.status === 401) {
-                    alert("Debes iniciar sesión para agregar a favoritos.");
-                } else if (response.status === 409) {
-                    return response.text().then(msg => alert(msg));
-                } else {
-                    return response.text().then(msg => alert(`Error: ${msg}`));
-                }
-            });
-
-        return false;
-    }
 
     document.addEventListener('DOMContentLoaded', function () {
         fetch('/api/aventuras')
@@ -219,59 +229,49 @@
                 const container = document.getElementById('adventure-list');
                 container.innerHTML = '';
 
-                if (Array.isArray(data) && data.length > 0) {
-                    data.forEach(av => {
-                        const div = document.createElement('div');
-                        div.classList.add('adventure-item');
-
-                        const imgHtml = av.fotoAvent
-                            ? `<img src="data:image/jpeg;base64,${av.fotoAvent}" class="card-img-top mb-2">`
-                            : `<p>No hay imagen disponible</p>`;
-
-                        let html = `
+                data.forEach(av => {
+                    const div = document.createElement('div');
+                    div.classList.add('adventure-item');
+                    div.innerHTML = `
                             <h3>${av.nombreAvent}</h3>
-                            ${imgHtml}
-                        `;
+                            ${av.fotoAvent ? `<img src="data:image/jpeg;base64,${av.fotoAvent}" class="card-img-top mb-2">` : ''}
+                            <p><strong>Tipo:</strong> ${av.tipoAvent}</p>
+                            <p><strong>Zona:</strong> ${av.zonaAvent}</p>
+                            <p><strong>Horario:</strong> ${av.horarioAvent}</p>
 
-                        if (usuarioLogueado) {
-                            html += `
-                                <p><strong>Tipo:</strong> ${av.tipoAvent}</p>
-                                <p><strong>Zona:</strong> ${av.zonaAvent}</p>
-                                <p><strong>Horario:</strong> ${av.horarioAvent}</p>
-                                <button class="btn btn-warning mt-2" onclick="agregarFavorito('aventura', '${av.nombreAvent}')">⭐ Agregar a Favoritos</button>
-                            `;
-                        }
+                            ${usuarioLogueado ? `
+                                <button class="btn btn-warning mt-2" onclick="agregarFavorito('aventura', '${av.nombreAvent}')">
+                                    ⭐ Agregar a Favoritos
+                                </button>
+                            ` : ''}
 
-                        html += `
                             <div class="comment-section mt-3">
                                 <h5>Comentarios</h5>
-                                <div id="comentarios-${av.id}" class="comentarios-list mb-2">
+                                <div id="comentarios-${av.nombreAvent}" class="comentarios-list mb-2">
                                     <p>Cargando comentarios...</p>
                                 </div>
+
                                 ${usuarioLogueado ? `
-                                <form onsubmit="return enviarComentario('${av.id}')">
-                                    <div class="mb-2">
-                                        <textarea id="comentario-input-${av.id}" class="form-control" rows="2" placeholder="Escribe tu comentario..." required></textarea>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary btn-sm">Comentar</button>
-                                </form>
-                                ` : `<p class="text-muted">Inicia sesión para comentar.</p>`}
+                                    <form onsubmit="return enviarComentario('${av.nombreAvent}')">
+                                        <textarea id="comentario-input-${av.nombreAvent}"
+                                                  class="form-control"
+                                                  rows="2"
+                                                  placeholder="Escribe tu comentario..."
+                                                  required></textarea>
+                                        <button type="submit" class="btn btn-primary btn-sm mt-2">Comentar</button>
+                                    </form>
+                                ` : '<p class="text-muted">Inicia sesión para comentar.</p>'}
                             </div>
                         `;
-
-                        div.innerHTML = html;
-                        container.appendChild(div);
-
-                        cargarComentarios(av.id);
-                    });
-                } else {
-                    container.innerHTML = '<p>No hay aventuras registradas.</p>';
-                }
+                    container.appendChild(div);
+                    cargarComentarios(av.nombreAvent);
+                });
             })
             .catch(err => {
                 console.error('Error:', err);
+                document.getElementById('adventure-list').innerHTML =
+                    '<p class="text-danger">Error al cargar aventuras.</p>';
             });
-
     });
 </script>
 
