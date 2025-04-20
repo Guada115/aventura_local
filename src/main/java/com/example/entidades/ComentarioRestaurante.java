@@ -2,10 +2,11 @@ package com.example.entidades;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-@Table(name = "comentarios")
-public class Comentario {
+@Table(name = "comentarios_restaurantes")
+public class ComentarioRestaurante {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,20 +23,24 @@ public class Comentario {
     private Usuario usuario;
 
     @ManyToOne
-    @JoinColumn(name = "fk_aventura_nombre", nullable = false)
-    private Aventura aventura;
+    @JoinColumn(name = "fk_restaurante_nombre", nullable = false)
+    private Restaurante restaurante;
 
-    public Comentario() {
+    // Constructores, getters y setters
+    public ComentarioRestaurante() {
     }
 
-    public Comentario(String contenido, LocalDateTime fecha, Usuario usuario, Aventura aventura) {
+    public ComentarioRestaurante(String contenido, LocalDateTime fecha, Usuario usuario, Restaurante restaurante) {
         this.contenido = contenido;
         this.fecha = fecha;
         this.usuario = usuario;
-        this.aventura = aventura;
+        this.restaurante = restaurante;
     }
 
+    // Getters y setters...
+
     // Getters y Setters
+
     public Long getId() {
         return id;
     }
@@ -51,6 +56,7 @@ public class Comentario {
     public void setContenido(String contenido) {
         this.contenido = contenido;
     }
+
 
     public LocalDateTime getFecha() {
         return fecha;
@@ -68,11 +74,15 @@ public class Comentario {
         this.usuario = usuario;
     }
 
-    public Aventura getAventura() {
-        return aventura;
+    public Restaurante getRestaurante() {
+        return restaurante;
     }
 
-    public void setAventura(Aventura aventura) {
-        this.aventura = aventura;
+    public void setRestaurante(Restaurante restaurante) {
+        this.restaurante = restaurante;
+    }
+
+    public List<Comentario> findByRestauranteOrderByFechaDesc(Restaurante restaurante) {
+        return List.of();
     }
 }

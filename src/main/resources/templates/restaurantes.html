@@ -1,12 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Restaurantes - Aventura Local</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-            crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         body {
             background: linear-gradient(to right, rgb(9, 84, 119), rgb(129, 204, 239));
@@ -23,20 +20,12 @@
             font-family: fantasy;
         }
 
-        .card-body h5 {
-            color: rgb(5, 47, 78);
-        }
-
-        .btn-primary {
-            background-color: rgb(7, 58, 82);
-        }
-
         .card-img-top {
             width: 100%;
-            max-width: 300px; /* Ancho máximo para no desbordar */
-            height: auto; /* Altura automática para mantener la proporción */
-            object-fit: cover; /* Ajusta la imagen para que cubra el contenedor */
-            border-radius: 10px; /* Bordes redondeados */
+            max-width: 300px;
+            height: auto;
+            object-fit: cover;
+            border-radius: 10px;
         }
 
         .container-fluid {
@@ -69,15 +58,34 @@
         .btn-warning {
             background-color: #ffc107;
             color: black;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
         }
 
-        .btn-warning:hover {
-            background-color: #e0a800;
+        .comment-section {
+            background-color: #ffffff;
+            border-top: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .comentarios-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            border: 1px solid #eee;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .comentarios-list p {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .comentarios-list p:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
         }
     </style>
 </head>
@@ -107,15 +115,12 @@
                 </div>
             </div>
 
-            <!-- Sección de sesión -->
             <div class="d-flex align-items-center">
-                <!-- Si el usuario NO está logueado -->
                 <div th:if="${session.usuarioLogueado == null}">
                     <a href="login" class="btn btn-outline-primary me-2" style="background-color: rgb(7, 58, 82);">Iniciar Sesión</a>
                     <a href="registrar" class="btn btn-primary" style="background-color: rgb(7, 58, 82);">Registrarse</a>
                 </div>
 
-                <!-- Si el usuario SÍ está logueado -->
                 <div th:if="${session.usuarioLogueado != null}" class="d-flex align-items-center">
                     <p class="mb-0 text-white me-3">
                         Bienvenido, <span th:text="${session.usuarioLogueado.nombre}"></span>
@@ -142,60 +147,11 @@
 </footer>
 
 <script th:inline="javascript">
-    const usuarioLogueado = [[${session.usuarioLogueado != null}]];
+    const usuarioLogueado = /*[[${session.usuarioLogueado != null}]]*/ false;
 </script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        obtenerRestaurantes();
-    });
-
-    function obtenerRestaurantes() {
-        fetch('/api/restaurantes')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                const restaurantList = document.getElementById('restaurant-list');
-                restaurantList.innerHTML = ''; // Limpiar contenido anterior
-
-                if (Array.isArray(data) && data.length > 0) {
-                    data.forEach(restaurante => {
-                        const restaurantItem = document.createElement('div');
-                        restaurantItem.classList.add('restaurant-item');
-
-                        const imgElement = restaurante.foto
-                            ? `<img src="data:image/jpeg;base64,${restaurante.foto}" alt="Foto del Restaurante" class="card-img-top">`
-                            : '<p>No hay imagen disponible</p>';
-
-                        let contenido = `
-                            <h3>${restaurante.nombre}</h3>
-                            ${imgElement}
-                        `;
-
-                        if (usuarioLogueado) {
-                            contenido += `
-                                <p><strong>Horario:</strong> ${restaurante.horario}</p>
-                                <p><strong>Sector:</strong> ${restaurante.sector}</p>
-                                <p><strong>Tipo de Comida:</strong> ${restaurante.tipoComida}</p>
-                            `;
-                        }
-
-                        restaurantItem.innerHTML = contenido;
-                        restaurantList.appendChild(restaurantItem);
-                    });
-                } else {
-                    restaurantList.innerHTML = '<p>No hay restaurantes registrados.</p>';
-                }
-            })
-            .catch(error => {
-                console.error('Error al obtener la lista de restaurantes:', error);
-            });
-    }
-
+    // Función para agregar a favoritos
     function agregarFavorito(tipo, idReferencia) {
         fetch('/favoritos', {
             method: 'POST',
@@ -221,55 +177,166 @@
             });
     }
 
+    // Función para enviar comentarios de restaurante
+    function enviarComentarioRestaurante(nombreRestaurante) {
+        const textarea = document.getElementById(`comentario-input-${nombreRestaurante}`);
+        const texto = textarea.value.trim();
+
+        if (!texto) {
+            alert("¡El comentario no puede estar vacío!");
+            return false;
+        }
+
+        fetch(`/comentariosrestaurante/guardarrestaurante`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `texto=${encodeURIComponent(texto)}&nombreRestaurante=${encodeURIComponent(nombreRestaurante)}`
+        })
+            .then(response => {
+                if (response.ok) {
+                    return cargarComentariosRestaurante(nombreRestaurante, false, true); // true indica que es nuevo
+                }
+                throw new Error('Error en la respuesta');
+            })
+            .then(() => {
+                textarea.value = '';
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert("Error al enviar el comentario");
+            });
+
+        return false;
+    }
+
+    // Función para cargar comentarios de restaurante
+    function cargarComentariosRestaurante(nombreRestaurante, mostrarTodos = false, esNuevoComentario = false) {
+        fetch(`/comentariosrestaurante/${nombreRestaurante}`)
+            .then(response => {
+                if (!response.ok) throw new Error("Error al cargar comentarios");
+                return response.json();
+            })
+            .then(comentarios => {
+                const contenedor = document.getElementById(`comentarios-${nombreRestaurante}`);
+                const btnVerTodos = document.getElementById(`btn-ver-todos-${nombreRestaurante}`);
+
+                // Ordenar por fecha descendente (más recientes primero)
+                comentarios.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+                // Determinar cuántos comentarios mostrar
+                let comentariosAMostrar = comentarios;
+                if (!mostrarTodos && comentarios.length > 3) {
+                    comentariosAMostrar = comentarios.slice(0, 3);
+                }
+
+                // Renderizar comentarios
+                contenedor.innerHTML = comentariosAMostrar.map(c => `
+            <p><strong>${c.usuario.nombre}:</strong> ${c.contenido}
+            <small class="text-muted">(${new Date(c.fecha).toLocaleString()})</small></p>
+        `).join('');
+
+                // Manejar el botón "Ver todos"
+                if (comentarios.length > 3) {
+                    btnVerTodos.style.display = 'block';
+                    // Actualizar el evento onclick para alternar entre mostrar todos/no todos
+                    btnVerTodos.onclick = function() {
+                        const actualmenteMostrandoTodos = contenedor.children.length === comentarios.length;
+                        cargarComentariosRestaurante(nombreRestaurante, !actualmenteMostrandoTodos);
+
+                        // Cambiar el texto del botón
+                        btnVerTodos.textContent = actualmenteMostrandoTodos ?
+                            'Ver todos los comentarios' :
+                            'Mostrar menos';
+                    };
+
+                    // Cambiar el texto inicial del botón
+                    btnVerTodos.textContent = mostrarTodos ? 'Mostrar menos' : 'Ver todos los comentarios';
+                } else {
+                    btnVerTodos.style.display = 'none';
+                }
+
+                // Si es un nuevo comentario y hay más de 3, mostrar todos automáticamente
+                if (esNuevoComentario && comentarios.length > 3 && !mostrarTodos) {
+                    cargarComentariosRestaurante(nombreRestaurante, true);
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                document.getElementById(`comentarios-${nombreRestaurante}`).innerHTML =
+                    '<p>Error al cargar comentarios</p>';
+            });
+    }
+
+    // Cargar restaurantes al iniciar
     document.addEventListener('DOMContentLoaded', function() {
         fetch('/api/restaurantes')
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
+                if (!response.ok) throw new Error('Error al cargar restaurantes');
                 return response.json();
             })
-            .then(data => {
-                const restaurantList = document.getElementById('restaurant-list');
-                restaurantList.innerHTML = '';
+            .then(restaurantes => {
+                const container = document.getElementById('restaurant-list');
+                container.innerHTML = '';
 
-                if (Array.isArray(data) && data.length > 0) {
-                    data.forEach(restaurante => {
-                        const restaurantItem = document.createElement('div');
-                        restaurantItem.classList.add('restaurant-item');
-
-                        const imgElement = restaurante.foto
-                            ? `<img src="data:image/jpeg;base64,${restaurante.foto}" alt="Foto del Restaurante" class="card-img-top">`
-                            : '<p>No hay imagen disponible</p>';
-
-                        let contenido = `
+                if (Array.isArray(restaurantes) && restaurantes.length > 0) {
+                    restaurantes.forEach(restaurante => {
+                        const div = document.createElement('div');
+                        div.classList.add('restaurant-item');
+                        div.innerHTML = `
                             <h3>${restaurante.nombre}</h3>
-                            ${imgElement}
-                        `;
+                            ${restaurante.foto ?
+                            `<img src="data:image/jpeg;base64,${restaurante.foto}" class="card-img-top mb-2">` :
+                            '<p>No hay imagen disponible</p>'}
+                            <p><strong>Horario:</strong> ${restaurante.horario}</p>
+                            <p><strong>Sector:</strong> ${restaurante.sector}</p>
+                            <p><strong>Tipo de Comida:</strong> ${restaurante.tipoComida}</p>
 
-                        if (usuarioLogueado) {
-                            contenido += `
-                                <p><strong>Horario:</strong> ${restaurante.horario}</p>
-                                <p><strong>Sector:</strong> ${restaurante.sector}</p>
-                                <p><strong>Tipo de Comida:</strong> ${restaurante.tipoComida}</p>
-                                <button class="btn btn-warning mt-2" onclick="agregarFavorito('restaurante', '${restaurante.nombre}')">
+                            ${usuarioLogueado ? `
+                                <button class="btn btn-warning mt-2"
+                                        onclick="agregarFavorito('restaurante', '${restaurante.nombre}')">
                                     ⭐ Agregar a Favoritos
                                 </button>
-                            `;
-                        }
+                            ` : ''}
 
-                        restaurantItem.innerHTML = contenido;
-                        restaurantList.appendChild(restaurantItem);
+                            <div class="comment-section mt-3">
+                                <h5>Comentarios</h5>
+                                <div id="comentarios-${restaurante.nombre}" class="comentarios-list mb-2">
+                                    <p>Cargando comentarios...</p>
+                                </div>
+
+                                <button id="btn-ver-todos-${restaurante.nombre}"
+                                        class="btn btn-link btn-sm p-0 mb-2"
+                                        style="display: none;">
+                                        Ver todos los comentarios
+                                </button>
+
+                                ${usuarioLogueado ? `
+                                <form onsubmit="return enviarComentarioRestaurante('${restaurante.nombre}')">
+    <textarea id="comentario-input-${restaurante.nombre}"
+              class="form-control"
+              rows="2"
+              placeholder="Escribe tu comentario..."
+              required></textarea>
+    <button type="submit" class="btn btn-primary btn-sm mt-2">Comentar</button>
+</form>
+                                ` : '<p class="text-muted">Inicia sesión para comentar.</p>'}
+                            </div>
+                        `;
+                        container.appendChild(div);
+                        cargarComentariosRestaurante(restaurante.nombre);
                     });
                 } else {
-                    restaurantList.innerHTML = '<p>No hay restaurantes registrados.</p>';
+                    container.innerHTML = '<p>No hay restaurantes registrados.</p>';
                 }
             })
-            .catch(error => {
-                console.error('Error al obtener la lista de restaurantes:', error);
+            .catch(err => {
+                console.error('Error:', err);
+                document.getElementById('restaurant-list').innerHTML =
+                    '<p class="text-danger">Error al cargar restaurantes</p>';
             });
     });
 </script>
-
 </body>
 </html>

@@ -1,41 +1,46 @@
 package com.example.entidades;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "comentarios")
-public class Comentario {
+@Table(name = "comentarios_transportes")
+public class ComentarioTransporte {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "El contenido no puede estar vacío")
+    @Size(max = 1000, message = "El contenido no puede exceder los 1000 caracteres")
     @Column(nullable = false, length = 1000)
     private String contenido;
 
     @Column(nullable = false)
     private LocalDateTime fecha;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fk_usuario_identificacion", nullable = false)
     private Usuario usuario;
 
-    @ManyToOne
-    @JoinColumn(name = "fk_aventura_nombre", nullable = false)
-    private Aventura aventura;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fk_transporte_nombre", nullable = false)
+    private Transporte transporte;
 
-    public Comentario() {
+    // Constructores
+    public ComentarioTransporte() {
     }
 
-    public Comentario(String contenido, LocalDateTime fecha, Usuario usuario, Aventura aventura) {
+    public ComentarioTransporte(String contenido, LocalDateTime fecha, Usuario usuario, Transporte transporte) {
         this.contenido = contenido;
         this.fecha = fecha;
         this.usuario = usuario;
-        this.aventura = aventura;
+        this.transporte = transporte;
     }
 
-    // Getters y Setters
+    // Getters y setters
     public Long getId() {
         return id;
     }
@@ -68,11 +73,13 @@ public class Comentario {
         this.usuario = usuario;
     }
 
-    public Aventura getAventura() {
-        return aventura;
+    public Transporte getTransporte() {
+        return transporte;
     }
 
-    public void setAventura(Aventura aventura) {
-        this.aventura = aventura;
+    public void setTransporte(Transporte transporte) {
+        this.transporte = transporte;
     }
+
+
 }

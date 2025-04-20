@@ -71,6 +71,34 @@
     .btn-warning:hover {
       background-color: #e0a800;
     }
+
+    .comment-section {
+      background-color: #ffffff;
+      border-top: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .comentarios-list {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      border: 1px solid #eee;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    .comentarios-list p {
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed #eee;
+    }
+
+    .comentarios-list p:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
   </style>
 </head>
 
@@ -99,15 +127,12 @@
         </div>
       </div>
 
-      <!-- Sección de sesión -->
       <div class="d-flex align-items-center">
-        <!-- Si el usuario NO está logueado -->
         <div th:if="${session.usuarioLogueado == null}">
           <a href="login" class="btn btn-outline-primary me-2" style="background-color: rgb(7, 58, 82);">Iniciar Sesión</a>
           <a href="registrar" class="btn btn-primary" style="background-color: rgb(7, 58, 82);">Registrarse</a>
         </div>
 
-        <!-- Si el usuario SÍ está logueado -->
         <div th:if="${session.usuarioLogueado != null}" class="d-flex align-items-center">
           <p class="mb-0 text-white me-3">
             Bienvenido, <span th:text="${session.usuarioLogueado.nombre}"></span>
@@ -126,8 +151,6 @@
   <!-- Lista de transportes se cargará aquí -->
 </div>
 
-
-
 <footer class="footer mt-auto">
   <div class="container">
     <p>&copy; 2024 Aventura Local - Todos los derechos reservados.</p>
@@ -135,68 +158,18 @@
 </footer>
 
 <script th:inline="javascript">
-  const usuarioLogueado = [[${session.usuarioLogueado != null}]];
+  const usuarioLogueado = /*[[${session.usuarioLogueado != null}]]*/ false;
 </script>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    obtenerTransportes();
-  });
-
-  function obtenerTransportes() {
-    fetch('/api/transportes')
-            .then(response => {
-              if (!response.ok) {
-                throw new Error('Network response was not ok');
-              }
-              return response.json();
-            })
-            .then(data => {
-              const transportList = document.getElementById('transport-list');
-              transportList.innerHTML = ''; // Limpiar contenido anterior
-
-              if (Array.isArray(data) && data.length > 0) {
-                data.forEach(transporte => {
-                  const transportItem = document.createElement('div');
-                  transportItem.classList.add('transport-item');
-
-                  const imgElement = transporte.imagenTransporte
-                          ? `<img src="data:image/jpeg;base64,${transporte.imagenTransporte}" alt="Foto del Transporte" class="card-img-top">`
-                          : '<p>No hay imagen disponible</p>';
-
-                  let contenido = `
-              <h3>${transporte.nombreTransporte}</h3>
-              ${imgElement}
-            `;
-
-                  if (usuarioLogueado) {
-                    contenido += `
-                <p><strong>Tipo:</strong> ${transporte.tipoTransporte}</p>
-                <p><strong>Ruta:</strong> ${transporte.rutaTransporte}</p>
-                <p><strong>Horario:</strong> ${transporte.horarioTransporte}</p>
-              `;
-                  }
-
-                  transportItem.innerHTML = contenido;
-                  transportList.appendChild(transportItem);
-                });
-              } else {
-                transportList.innerHTML = '<p>No hay transportes registrados.</p>';
-              }
-            })
-            .catch(error => {
-              console.error('Error al obtener la lista de transportes:', error);
-            });
-  }
-
-
-    function agregarFavorito(tipo, idReferencia) {
+  // Función para agregar a favoritos
+  function agregarFavorito(tipo, idReferencia) {
     fetch('/favoritos', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({tipo: tipo, idReferencia: idReferencia})
+      body: JSON.stringify({ tipo: tipo, idReferencia: idReferencia })
     })
             .then(response => {
               if (response.ok) {
@@ -215,57 +188,170 @@
             });
   }
 
-    document.addEventListener('DOMContentLoaded', function() {
-    fetch('/api/transportes')
+  // Función para enviar comentarios de transporte
+  function enviarComentarioTransporte(nombreTransporte) {
+    const textarea = document.getElementById(`comentario-input-${nombreTransporte}`);
+    const texto = textarea.value.trim();
+
+    if (!texto) {
+      alert("¡El comentario no puede estar vacío!");
+      return false;
+    }
+
+    fetch(`/comentariotransporte/guardartransporte`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `texto=${encodeURIComponent(texto)}&nombreTransporte=${encodeURIComponent(nombreTransporte)}`
+    })
             .then(response => {
-              if (!response.ok) {
-                throw new Error('Network response was not ok');
+              if (response.ok) {
+                return cargarComentariosTransporte(nombreTransporte, false, true);
               }
+              throw new Error('Error en la respuesta');
+            })
+            .then(() => {
+              textarea.value = '';
+            })
+            .catch(err => {
+              console.error('Error:', err);
+              alert("Error al enviar el comentario");
+            });
+
+    return false;
+  }
+
+  // Función para cargar comentarios de transporte
+  function cargarComentariosTransporte(nombreTransporte, mostrarTodos = false, esNuevoComentario = false) {
+    fetch(`/comentariotransporte/${nombreTransporte}`)
+            .then(response => {
+              if (!response.ok) throw new Error("Error al cargar comentarios");
               return response.json();
             })
-            .then(data => {
+            .then(comentarios => {
+              const contenedor = document.getElementById(`comentarios-${nombreTransporte}`);
+              const btnVerTodos = document.getElementById(`btn-ver-todos-${nombreTransporte}`);
+
+              // Ordenar por fecha descendente
+              comentarios.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+              // Determinar cuántos comentarios mostrar
+              let comentariosAMostrar = comentarios;
+              if (!mostrarTodos && comentarios.length > 3) {
+                comentariosAMostrar = comentarios.slice(0, 3);
+              }
+
+              // Renderizar comentarios
+              contenedor.innerHTML = comentariosAMostrar.map(c => `
+        <p><strong>${c.usuario.nombre}:</strong> ${c.contenido}
+        <small class="text-muted">(${new Date(c.fecha).toLocaleString()})</small></p>
+      `).join('');
+
+              // Manejar el botón "Ver todos"
+              if (comentarios.length > 3) {
+                btnVerTodos.style.display = 'block';
+                btnVerTodos.onclick = () => {
+                  const actualmenteMostrandoTodos = contenedor.children.length === comentarios.length;
+                  cargarComentariosTransporte(nombreTransporte, !actualmenteMostrandoTodos);
+
+                  // Cambiar el texto del botón
+                  btnVerTodos.textContent = actualmenteMostrandoTodos ?
+                          'Ver todos los comentarios' :
+                          'Mostrar menos';
+                };
+
+                // Cambiar el texto inicial del botón
+                btnVerTodos.textContent = mostrarTodos ? 'Mostrar menos' : 'Ver todos los comentarios';
+              } else {
+                btnVerTodos.style.display = 'none';
+              }
+
+              // Si es un nuevo comentario y hay más de 3, mostrar todos automáticamente
+              if (esNuevoComentario && comentarios.length > 3 && !mostrarTodos) {
+                cargarComentariosTransporte(nombreTransporte, true);
+              }
+            })
+            .catch(err => {
+              console.error('Error:', err);
+              document.getElementById(`comentarios-${nombreTransporte}`).innerHTML =
+                      '<p>Error al cargar comentarios</p>';
+            });
+  }
+
+  // Cargar transportes al iniciar
+  document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/transportes')
+            .then(response => {
+              if (!response.ok) throw new Error('Error al cargar transportes');
+              return response.json();
+            })
+            .then(transportes => {
               const transportList = document.getElementById('transport-list');
               transportList.innerHTML = '';
 
-              if (Array.isArray(data) && data.length > 0) {
-                data.forEach(transporte => {
+              if (Array.isArray(transportes) && transportes.length > 0) {
+                transportes.forEach(transporte => {
                   const transportItem = document.createElement('div');
                   transportItem.classList.add('transport-item');
 
-                  const imgElement = transporte.imagenTransporte
-                          ? `<img src="data:image/jpeg;base64,${transporte.imagenTransporte}" alt="Foto del Transporte" class="card-img-top">`
-                          : '<p>No hay imagen disponible</p>';
+                  const imgElement = transporte.imagenTransporte ?
+                          `<img src="data:image/jpeg;base64,${transporte.imagenTransporte}" class="card-img-top mb-2">` :
+                          '<p>No hay imagen disponible</p>';
 
-                  let contenido = `
-                            <h3>${transporte.nombreTransporte}</h3>
-                            ${imgElement}
-                        `;
+                  transportItem.innerHTML = `
+            <h3>${transporte.nombreTransporte}</h3>
+            ${imgElement}
+            <p><strong>Tipo:</strong> ${transporte.tipoTransporte}</p>
+            <p><strong>Ruta:</strong> ${transporte.rutaTransporte}</p>
+            <p><strong>Horario:</strong> ${transporte.horarioTransporte}</p>
 
-                  if (usuarioLogueado) {
-                    contenido += `
-                                <p><strong>Tipo:</strong> ${transporte.tipoTransporte}</p>
-                                <p><strong>Ruta:</strong> ${transporte.rutaTransporte}</p>
-                                <p><strong>Horario:</strong> ${transporte.horarioTransporte}</p>
-                                <button class="btn btn-warning mt-2" onclick="agregarFavorito('transporte', '${transporte.nombreTransporte}')">
-                                    ⭐ Agregar a Favoritos
-                                </button>
-                            `;
-                  }
+            ${usuarioLogueado ? `
+              <button class="btn btn-warning mt-2"
+                      onclick="agregarFavorito('transporte', '${transporte.nombreTransporte}')">
+                ⭐ Agregar a Favoritos
+              </button>
+            ` : ''}
 
-                  transportItem.innerHTML = contenido;
+            <div class="comment-section mt-3">
+              <h5>Comentarios</h5>
+              <div id="comentarios-${transporte.nombreTransporte}" class="comentarios-list mb-2">
+                <p>Cargando comentarios...</p>
+              </div>
+
+              <button id="btn-ver-todos-${transporte.nombreTransporte}"
+                      class="btn btn-link btn-sm p-0 mb-2"
+                      style="display: none;">
+                Ver todos los comentarios
+              </button>
+
+              ${usuarioLogueado ? `
+              <form onsubmit="return enviarComentarioTransporte('${transporte.nombreTransporte}')">
+                <textarea id="comentario-input-${transporte.nombreTransporte}"
+                          class="form-control"
+                          rows="2"
+                          placeholder="Escribe tu comentario..."
+                          required></textarea>
+                <button type="submit" class="btn btn-primary btn-sm mt-2">Comentar</button>
+              </form>
+              ` : '<p class="text-muted">Inicia sesión para comentar.</p>'}
+            </div>
+          `;
+
                   transportList.appendChild(transportItem);
+                  cargarComentariosTransporte(transporte.nombreTransporte);
                 });
               } else {
                 transportList.innerHTML = '<p>No hay transportes registrados.</p>';
               }
             })
-            .catch(error => {
-              console.error('Error al obtener la lista de transportes:', error);
+            .catch(err => {
+              console.error('Error:', err);
+              document.getElementById('transport-list').innerHTML =
+                      '<p class="text-danger">Error al cargar transportes</p>';
             });
   });
-
 </script>
 
 </body>
-
 </html>
