@@ -11,7 +11,7 @@ import java.util.List;
 @Service
 public class FavoritoService {
     @Autowired
-    private FavoritoRepository favoritoRepo;
+    public FavoritoRepository favoritoRepo;
 
     public List<Favorito> obtenerFavoritosPorUsuario(String identificacion) {
 

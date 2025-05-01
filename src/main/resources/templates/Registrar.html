@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -83,13 +82,13 @@
         }
 
         .error {
-            color: red; /* Color para los mensajes de error */
+            color: red;
             text-align: center;
             margin-top: 10px;
         }
 
         .success {
-            color: green; /* Color para los mensajes de éxito */
+            color: green;
             text-align: center;
             margin-top: 10px;
         }
@@ -129,9 +128,21 @@
         <br>
         <button type="submit" class="btnGuardar">Guardar</button>
     </form>
-
-
 </div>
-</body>
 
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Alerta de éxito -->
+<script th:if="${mensaje}">
+    Swal.fire({
+        icon: 'success',
+        title: '¡Registro exitoso!',
+        text: /*[[${mensaje}]]*/,
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Aceptar'
+    });
+</script>
+
+</body>
 </html>
