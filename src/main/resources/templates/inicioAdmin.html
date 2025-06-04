@@ -110,6 +110,31 @@
     <h2>CRUD Transportes</h2>
   </a>
 </div>
+
+<!-- Botón para ir al reporte general -->
+<div style="text-align: center; margin: 20px 0;">
+  <button class="btn-logout" onclick="window.location.href='/favoritos/reporte-general'">
+    Ver Reporte General de Favoritos
+  </button>
+</div>
+
+<script>
+  function generarReporte() {
+    fetch('/favoritos/reporte/restaurante-mas-popular')
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Error al generar el reporte');
+              }
+              return response.text();
+            })
+            .then(data => {
+              alert(data); // Mostrar reporte como alerta o en un modal
+            })
+            .catch(error => {
+              alert('Error: ' + error.message);
+            });
+  }
+</script>
 </body>
 
 </html>

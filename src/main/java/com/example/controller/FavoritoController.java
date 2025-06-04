@@ -163,4 +163,11 @@ public class FavoritoController {
         public void setIdReferencia(String idReferencia) { this.idReferencia = idReferencia; }
     }
 
+    @GetMapping("/reporte-general")
+    public String mostrarReporteGeneral(Model model) {
+        Map<String, String> reporte = favoritoService.obtenerReporteGeneralFavoritos();
+        model.addAttribute("reporte", reporte);
+        return "reporteGeneral";
+    }
+
 }
